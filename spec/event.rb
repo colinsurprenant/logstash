@@ -1,6 +1,7 @@
 # encoding: utf-8
 
 require "logstash/event"
+require "logstash/environment"
 require "insist"
 
 describe LogStash::Event do
@@ -217,13 +218,19 @@ describe LogStash::Event do
   context "acceptable @timestamp formats" do
     subject { LogStash::Event.new }
 
-    formats = [
-      "YYYY-MM-dd'T'HH:mm:ss.SSSZ",
-      "YYYY-MM-dd'T'HH:mm:ss.SSSSSSZ",
-      "YYYY-MM-dd'T'HH:mm:ss.SSS",
-      "YYYY-MM-dd'T'HH:mm:ss",
-      "YYYY-MM-dd'T'HH:mm:ssZ",
-    ]
+    formats = if LogStash::Environment.jruby?
+      [
+        "YYYY-MM-dd'T'HH:mm:ss.SSSZ",
+        "YYYY-MM-dd'T'HH:mm:ss.SSSSSSZ",
+        "YYYY-MM-dd'T'HH:mm:ss.SSS",
+        "YYYY-MM-dd'T'HH:mm:ss",
+        "YYYY-MM-dd'T'HH:mm:ssZ",
+      ]
+    else
+      [
+        "%Y-%m-%d'T'%H:%M:%S.%L%z",
+      ]
+    end
     formats.each do |format|
       it "includes #{format}" do
         time = subject.sprintf("%{+#{format}}")
