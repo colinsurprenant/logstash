@@ -2,7 +2,7 @@
 require "logstash/inputs/base"
 require "logstash/namespace"
 require "logstash/timestamp"
-require "socket"
+require "logstash/environment"
 
 # This input will pull events from a (http://msdn.microsoft.com/en-us/library/windows/desktop/bb309026%28v=vs.85%29.aspx)[Windows Event Log].
 #
@@ -30,7 +30,7 @@ class LogStash::Inputs::EventLog < LogStash::Inputs::Base
     # wrap specified logfiles in suitable OR statements
     @logfiles = @logfile.join("' OR TargetInstance.LogFile = '")
 
-    @hostname = Socket.gethostname
+    @hostname = LogStash::Environment.hostname
     @logger.info("Registering input eventlog://#{@hostname}/#{@logfile}")
 
     if RUBY_PLATFORM == "java"

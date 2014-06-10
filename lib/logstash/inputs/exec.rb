@@ -1,7 +1,7 @@
 # encoding: utf-8
 require "logstash/inputs/base"
 require "logstash/namespace"
-require "socket" # for Socket.gethostname
+require "logstash/environment"
 
 # Run command line tools and capture the whole output as an event.
 #
@@ -35,7 +35,7 @@ class LogStash::Inputs::Exec < LogStash::Inputs::Base
 
   public
   def run(queue)
-    hostname = Socket.gethostname
+    hostname = LogStash::Environment.hostname
     loop do
       start = Time.now
       @logger.info? && @logger.info("Running exec", :command => @command)

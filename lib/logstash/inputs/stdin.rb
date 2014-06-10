@@ -1,7 +1,7 @@
 # encoding: utf-8
 require "logstash/inputs/base"
 require "logstash/namespace"
-require "socket" # for Socket.gethostname
+require "logstash/enviroment"
 
 # Read events from standard input.
 #
@@ -15,11 +15,11 @@ class LogStash::Inputs::Stdin < LogStash::Inputs::Base
 
   public
   def register
-    @host = Socket.gethostname
+    @host = LogStash::Environment.hostname
     fix_streaming_codecs
   end # def register
 
-  def run(queue) 
+  def run(queue)
     while true
       begin
         # Based on some testing, there is no way to interrupt an IO.sysread nor

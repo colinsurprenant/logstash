@@ -1,9 +1,8 @@
 # encoding: utf-8
 require "logstash/inputs/base"
 require "logstash/namespace"
-
+require "logstash/environment"
 require "pathname"
-require "socket" # for Socket.gethostname
 
 # Stream events from files.
 #
@@ -128,7 +127,7 @@ class LogStash::Inputs::File < LogStash::Inputs::Base
     @tail = FileWatch::Tail.new(@tail_config)
     @tail.logger = @logger
     @path.each { |path| @tail.tail(path) }
-    hostname = Socket.gethostname
+    hostname = LogStash::Environment.hostname
 
     @tail.subscribe do |path, line|
       @logger.debug? && @logger.debug("Received line", :path => path, :text => line)

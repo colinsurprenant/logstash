@@ -1,7 +1,7 @@
 # encoding: utf-8
 require "logstash/inputs/base"
 require "logstash/namespace"
-require "socket" # for Socket.gethostname
+require "logstash/environment"
 
 # Stream events from a long running command pipe.
 #
@@ -30,12 +30,10 @@ class LogStash::Inputs::Pipe < LogStash::Inputs::Base
 
   public
   def run(queue)
+    hostname = LogStash::Environment.hostname
     loop do
       begin
-        @pipe = IO.popen(@command, mode="r")
-        hostname = Socket.gethostname
-
-        @pipe.each do |line|
+       IO.popen(@command, "r").each do |line|
           line = line.chomp
           source = "pipe://#{hostname}/#{@command}"
           @logger.debug? && @logger.debug("Received line", :command => @command, :line => line)

@@ -1,4 +1,5 @@
 require "logstash/errors"
+require "socket"
 
 module LogStash
   module Environment
@@ -38,6 +39,11 @@ module LogStash
 
     def pattern_path(path)
       return ::File.join(LOGSTASH_HOME, "patterns", path)
+    end
+
+    def hostname
+      # UTF8 encoding for MRI
+      @hostname ||= Socket.gethostname.force_encoding(Encoding::UTF_8)
     end
   end
 end

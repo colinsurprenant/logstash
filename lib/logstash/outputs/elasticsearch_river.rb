@@ -85,7 +85,6 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
 
   public
   def register
-    LogStash::Environment.load_elasticsearch_jars!
     prepare_river
   end
 
@@ -115,8 +114,7 @@ class LogStash::Outputs::ElasticSearchRiver < LogStash::Outputs::Base
       auth = "#{@user}:#{@password}"
 
       # Name the river by our hostname
-      require "socket"
-      hostname = Socket.gethostname
+      hostname = LogStash::Environment.hostname
 
       # Replace spaces with hyphens and remove all non-alpha non-dash non-underscore characters
       river_name = "#{hostname} #{@queue}".gsub(' ', '-').gsub(/[^\w-]/, '')

@@ -1,7 +1,7 @@
 # encoding: utf-8
 require "logstash/inputs/threadable"
 require "logstash/namespace"
-require "socket" # for Socket.gethostname
+require "logstash/environment"
 
 # Generate random log events.
 #
@@ -49,7 +49,7 @@ class LogStash::Inputs::Generator < LogStash::Inputs::Threadable
 
   public
   def register
-    @host = Socket.gethostname
+    @host = LogStash::Environment.hostname
     @count = @count.first if @count.is_a?(Array)
   end # def register
 

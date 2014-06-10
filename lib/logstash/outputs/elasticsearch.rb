@@ -4,7 +4,6 @@ require "logstash/environment"
 require "logstash/outputs/base"
 require "logstash/json"
 require "stud/buffer"
-require "socket" # for Socket.gethostname
 
 # This output lets you store logs in Elasticsearch and is the most recommended
 # output for Logstash. If you plan on using the Kibana web interface, you'll
@@ -189,7 +188,7 @@ class LogStash::Outputs::ElasticSearch < LogStash::Outputs::Base
     if @node_name
       client_settings["node.name"] = @node_name
     else
-      client_settings["node.name"] = "logstash-#{Socket.gethostname}-#{$$}-#{object_id}"
+      client_settings["node.name"] = "logstash-#{LogStash::Environment.hostname}-#{$$}-#{object_id}"
     end
 
     if @protocol.nil?

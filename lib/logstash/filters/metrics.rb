@@ -2,6 +2,7 @@
 require "securerandom"
 require "logstash/filters/base"
 require "logstash/namespace"
+require "logstash/environment"
 
 # The metrics filter is useful for aggregating metrics.
 #
@@ -141,7 +142,6 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
 
   def register
     require "metriks"
-    require "socket"
     require "atomic"
     require "thread_safe"
     @last_flush = Atomic.new(0) # how many seconds ago the metrics where flushed.
@@ -182,7 +182,7 @@ class LogStash::Filters::Metrics < LogStash::Filters::Base
     return unless should_flush?
 
     event = LogStash::Event.new
-    event["message"] = Socket.gethostname
+    event["message"] = LogStash::Environment.hostname
     @metric_meters.each_pair do |name, metric|
       flush_rates event, name, metric
       metric.clear if should_clear?

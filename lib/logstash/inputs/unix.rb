@@ -1,7 +1,7 @@
 # encoding: utf-8
 require "logstash/inputs/base"
 require "logstash/namespace"
-require "socket"
+require "logstash/environment"
 
 # Read events over a UNIX socket.
 #
@@ -39,8 +39,8 @@ class LogStash::Inputs::Unix < LogStash::Inputs::Base
 
   public
   def register
-    require "socket"
     require "timeout"
+    require "socket"
 
     if server?
       @logger.info("Starting unix input listener", :address => "#{@path}", :force_unlink => "#{@force_unlink}")
@@ -68,7 +68,7 @@ class LogStash::Inputs::Unix < LogStash::Inputs::Base
   private
   def handle_socket(socket, output_queue)
     begin
-      hostname = Socket.gethostname
+      hostname = LogStash::Environment.hostname
       loop do
         buf = nil
         # NOTE(petef): the timeout only hits after the line is read

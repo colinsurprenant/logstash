@@ -1,7 +1,6 @@
 # encoding: utf-8
 require "logstash/inputs/base"
 require "logstash/namespace"
-require "socket" # for Socket.gethostname
 
 class LogStash::Inputs::InvalidInput < LogStash::Inputs::Base
   config_name "invalid_input"
