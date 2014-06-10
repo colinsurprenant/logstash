@@ -2,15 +2,41 @@ require "test_utils"
 require "ftw"
 require "logstash/plugin"
 require "logstash/json"
+require "logstash/environment"
 
 describe "outputs/elasticsearch" do
   extend LogStash::RSpec
 
-  it "should register" do
-    output = LogStash::Plugin.lookup("output", "elasticsearch").new("embedded" => "false", "protocol" => "transport", "manage_template" => "false")
+  if LogStash::Environment.jruby?
+    it "should register transport protocol in jruby" do
+      output = LogStash::Plugin.lookup("output", "elasticsearch").new("embedded" => "false", "protocol" => "transport", "manage_template" => "false")
+      expect {output.register}.to_not raise_error
+    end
 
-    # register will try to load jars and raise if it cannot find jars
-    expect {output.register}.to_not raise_error
+    it "should register node protocol in jruby", :elasticsearch => true do
+      output = LogStash::Plugin.lookup("output", "elasticsearch").new("embedded" => "false", "protocol" => "node", "manage_template" => "false")
+      expect {output.register}.to_not raise_error
+    end
+
+    it "should register http protocol in jruby" do
+      output = LogStash::Plugin.lookup("output", "elasticsearch").new("embedded" => "false", "protocol" => "http", "manage_template" => "false")
+      expect {output.register}.to_not raise_error
+    end
+  else
+    it "should not register transport protocol in mri" do
+      output = LogStash::Plugin.lookup("output", "elasticsearch").new("embedded" => "false", "protocol" => "transport", "manage_template" => "false")
+      expect {output.register}.to raise_error(LogStash::PluginLoadingError)
+    end
+
+    it "should not register node protocol in mri" do
+      output = LogStash::Plugin.lookup("output", "elasticsearch").new("embedded" => "false", "protocol" => "node", "manage_template" => "false")
+      expect {output.register}.to raise_error(LogStash::PluginLoadingError)
+    end
+
+    it "should register http protocol in mri" do
+      output = LogStash::Plugin.lookup("output", "elasticsearch").new("embedded" => "false", "protocol" => "http", "manage_template" => "false")
+      expect {output.register}.to_not raise_error
+    end
   end
 
   describe "ship lots of events w/ default index_type", :elasticsearch => true do
