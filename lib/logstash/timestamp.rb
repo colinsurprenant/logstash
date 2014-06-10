@@ -11,7 +11,7 @@ module LogStash
   class Timestamp
     extend Forwardable
 
-    def_delegators :@time, :tv_usec, :usec, :year, :iso8601, :to_i, :tv_sec, :to_f, :to_edn
+    def_delegators :@time, :tv_usec, :usec, :year, :iso8601, :to_i, :tv_sec, :to_f, :to_edn, :strftime
 
     attr_reader :time
 
