@@ -18,7 +18,7 @@ public class EventImpl implements Event, Cloneable, Serializable {
         this.data = new HashMap();
         this.cancelled = false;
         this.timestamp = new Timestamp();
-        this.accessors = new Accessors();
+        this.accessors = new Accessors(new HashMap());
     }
 
     public Event clone() {

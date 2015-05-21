@@ -11,7 +11,7 @@ public class Accessors {
     }
 
     public Object get(String path) {
-        Path path = Path.parse(path);
+        Path p = Path.parse(path);
         Object target;
 
         return null;
