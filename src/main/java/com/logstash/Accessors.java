@@ -1,15 +1,19 @@
 package com.logstash;
 
-import java.util.List;
-import java.util.ArrayList;
+import java.util.Map;
 
 public class Accessors {
 
-    public Accessors() {
+    private Map store;
 
+    public Accessors(Map store) {
+        this.store = store;
     }
 
     public Object get(String path) {
+        Path path = Path.parse(path);
+        Object target;
+
         return null;
     }
 
@@ -24,15 +28,4 @@ public class Accessors {
     public boolean includes(String path) {
         return false;
     }
-
-    private Path parse(String path) {
-        return Path.parse((path));
-    }
-
-
-//    def parse(accessor)
-//    path = accessor.split(/[\[\]]/).select{|s| !s.empty?}
-//    [path.pop, path]
-//    end
-
 }
