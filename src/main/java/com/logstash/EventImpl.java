@@ -15,18 +15,10 @@ public class EventImpl implements Event, Cloneable, Serializable {
 
     public EventImpl()
     {
-        this.data = new HashMap();
+        this.data = new HashMap<String, Object>();
         this.cancelled = false;
         this.timestamp = new Timestamp();
-        this.accessors = new Accessors(new HashMap());
-    }
-
-    public Event clone() {
-        throw new UnsupportedOperationException("clone() not yet implemented");
-    }
-
-    public String toString() {
-        return sprintf(getTimestamp().to_iso8601() + " %{host} %{message}");
+        this.accessors = new Accessors(this.data);
     }
 
     @Override
@@ -37,7 +29,6 @@ public class EventImpl implements Event, Cloneable, Serializable {
     @Override
     public void uncancel() {
         this.cancelled = false;
-
     }
 
     @Override
@@ -56,26 +47,26 @@ public class EventImpl implements Event, Cloneable, Serializable {
     }
 
     @Override
-    public Object getField(String path) {
+    public Object getField(String reference) {
         // TODO: add metadata support
-        return this.accessors.get(path);
+        return this.accessors.get(reference);
     }
 
     @Override
-    public void setField(String path, Object value) {
+    public void setField(String reference, Object value) {
         // TODO: add metadata support
-        this.accessors.set(path, value);
+        this.accessors.set(reference, value);
     }
 
     @Override
-    public boolean includes(String path) {
+    public boolean includes(String reference) {
         // TODO: add metadata support
-        return this.accessors.includes(path);
+        return this.accessors.includes(reference);
     }
 
     @Override
     public String toJson() {
-        return null;
+        return "";
     }
 
     @Override
@@ -104,6 +95,15 @@ public class EventImpl implements Event, Cloneable, Serializable {
         // TODO: implement sprintf
         return s;
     }
+
+    public Event clone() {
+        throw new UnsupportedOperationException("clone() not yet implemented");
+    }
+
+    public String toString() {
+        return sprintf(getTimestamp().to_iso8601() + " %{host} %{message}");
+    }
+
 
 //    @Override
 //    public Map to_hash_with_metadata() {

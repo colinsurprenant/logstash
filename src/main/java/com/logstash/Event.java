@@ -4,6 +4,8 @@ import java.util.Map;
 
 public interface Event {
 
+    String toString();
+
     void cancel();
 
     void uncancel();
@@ -14,9 +16,13 @@ public interface Event {
 
     void setTimestamp(Timestamp t);
 
-    Object getField(String path);
+    Object getField(String reference);
 
-    void setField(String path, Object value);
+    void setField(String reference, Object value);
+
+    boolean includes(String reference);
+
+    Object remove(String reference);
 
     String toJson();
 
@@ -25,11 +31,7 @@ public interface Event {
 
     Event overwrite(Event e);
 
-    boolean includes(String path);
-
     Event append(Event e);
-
-    Object remove(String path);
 
     String sprintf(String s);
 
