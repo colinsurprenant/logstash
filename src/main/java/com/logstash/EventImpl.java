@@ -101,7 +101,7 @@ public class EventImpl implements Event, Cloneable, Serializable {
     }
 
     public String toString() {
-        return sprintf(getTimestamp().to_iso8601() + " %{host} %{message}");
+        return sprintf(getTimestamp().toIso8601() + " %{host} %{message}");
     }
 
 
