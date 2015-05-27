@@ -27,6 +27,10 @@ public class Timestamp {
         this.time = new DateTime(epoch_milliseconds, DateTimeZone.UTC);
     }
 
+    public Timestamp(Long epoch_milliseconds) {
+        this.time = new DateTime(epoch_milliseconds, DateTimeZone.UTC);
+    }
+
     public DateTime getTime() {
         return time;
     }
