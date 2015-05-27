@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+// TODO: implement thread-safe path cache singleton to avoid parsing
+
 public class FieldReference {
 
     private List<String> path;
