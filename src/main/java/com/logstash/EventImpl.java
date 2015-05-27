@@ -1,23 +1,49 @@
 package com.logstash;
 
-import jnr.posix.Times;
+import org.codehaus.jackson.map.ObjectMapper;
 
+import java.io.IOException;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
 
 public class EventImpl implements Event, Cloneable, Serializable {
 
     private boolean cancelled;
-    private Map data;
+    private Map<String, Object> data;
     private Timestamp timestamp;
     private Accessors accessors;
+
+    private static final String TIMESTAMP = "@timestamp";
+    private static final String TIMESTAMP_FAILURE_TAG = "_timestampparsefailure";
+    private static final String TIMESTAMP_FAILURE_FIELD = "_@timestamp";
+    private static final String VERSION = "@version";
+    private static final String VERSION_ONE = "1";
+
+    private static final ObjectMapper mapper = new ObjectMapper();
+
+    // TODO: add metadata support
 
     public EventImpl()
     {
         this.data = new HashMap<String, Object>();
+        this.data.put(VERSION, VERSION_ONE);
         this.cancelled = false;
         this.timestamp = new Timestamp();
+        this.data.put(TIMESTAMP, this.timestamp);
+        this.accessors = new Accessors(this.data);
+    }
+
+    public EventImpl(Map data)
+    {
+        this.data = data;
+        this.data.putIfAbsent(VERSION, VERSION_ONE);
+        this.cancelled = false;
+        this.timestamp = initTimestamp(data.get(TIMESTAMP));
+        this.data.put(TIMESTAMP, this.timestamp);
         this.accessors = new Accessors(this.data);
     }
 
@@ -65,8 +91,8 @@ public class EventImpl implements Event, Cloneable, Serializable {
     }
 
     @Override
-    public String toJson() {
-        return "";
+    public String toJson() throws IOException {
+        return mapper.writeValueAsString(this.data);
     }
 
     @Override
@@ -76,13 +102,13 @@ public class EventImpl implements Event, Cloneable, Serializable {
 
     @Override
     public Event overwrite(Event e) {
-        return null;
+        throw new UnsupportedOperationException("overwrite() not yet implemented");
     }
 
 
     @Override
     public Event append(Event e) {
-        return null;
+        throw new UnsupportedOperationException("append() not yet implemented");
     }
 
     @Override
@@ -101,17 +127,43 @@ public class EventImpl implements Event, Cloneable, Serializable {
     }
 
     public String toString() {
-        return sprintf(getTimestamp().toIso8601() + " %{host} %{message}");
+        // TODO: until we have sprintf
+        String host = (String)this.data.getOrDefault("host", "%{host}");
+        String message = (String)this.data.getOrDefault("message", "%{message}");
+        return getTimestamp().toIso8601() + " " + host + " " + message;
     }
 
+    private Timestamp initTimestamp(Object o) {
+        try {
+            if (o == null) {
+                // most frequent
+                return new Timestamp();
+            } else if (o instanceof String) {
+                // second most frequent
+                return new Timestamp((String) o);
+            } else if (o instanceof Timestamp) {
+                return new Timestamp((Timestamp) o);
+            } else if (o instanceof Long) {
+                return new Timestamp((Long) o);
+            } else {
+                // TODO: add logging
+                return new Timestamp();
+            }
+        } catch (IllegalArgumentException e) {
+            // TODO: add error logging
 
-//    @Override
-//    public Map to_hash_with_metadata() {
-//        return null;
-//    }
-//
-//    @Override
-//    public String to_json_with_metadata() {
-//        return null;
-//    }
+            List<Object> tags = (List<Object>) this.data.get("tags");
+            if (tags == null) {
+                tags = new ArrayList<>();
+                this.data.put("tags", tags);
+            }
+
+            if (!tags.contains(TIMESTAMP_FAILURE_TAG)) {
+                tags.add(TIMESTAMP_FAILURE_TAG);
+            }
+            this.data.put(TIMESTAMP_FAILURE_FIELD, o.toString());
+
+            return new Timestamp();
+        }
+    }
 }

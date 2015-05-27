@@ -1,5 +1,8 @@
 package com.logstash;
 
+import org.codehaus.jackson.JsonGenerationException;
+
+import java.io.IOException;
 import java.util.Map;
 
 public interface Event {
@@ -24,9 +27,9 @@ public interface Event {
 
     Object remove(String reference);
 
-    String toJson();
+    String toJson() throws IOException;
 
-    // TBD see if we need that here or just as a to_hash in the JRuby layer
+    // TODO: see if we need that here or just as a to_hash in the JRuby layer
     Map toMap();
 
     Event overwrite(Event e);
@@ -34,10 +37,4 @@ public interface Event {
     Event append(Event e);
 
     String sprintf(String s);
-
-//    // TBD
-//    Map to_hash_with_metadata();
-//
-//    // TBD
-//    String to_json_with_metadata();
 }
