@@ -7,11 +7,11 @@ import java.util.List;
 public class Accessors {
 
     private Map<String, Object> data;
-    private Map<String, Object> targetCache;
+    protected Map<String, Object> lut;
 
     public Accessors(Map data) {
         this.data = data;
-        this.targetCache = new HashMap();
+        this.lut = new HashMap(); // reference -> target LUT
     }
 
     public Object get(String reference) {
@@ -27,17 +27,19 @@ public class Accessors {
     }
 
     public Object del(String path) {
+        // TODO: implement
         return null;
     }
 
     public boolean includes(String path) {
+        // TODO: implemnent
         return false;
     }
 
     private Object findTarget(FieldReference field) {
         Object target;
 
-        if ((target = this.targetCache.get(field.getReference())) != null) {
+        if ((target = this.lut.get(field.getReference())) != null) {
             return target;
         }
 
@@ -49,7 +51,7 @@ public class Accessors {
             }
         }
 
-        this.targetCache.put(field.getReference(), target);
+        this.lut.put(field.getReference(), target);
 
         return target;
     }
@@ -57,7 +59,7 @@ public class Accessors {
     private Object findCreateTarget(FieldReference field) {
         Object target;
 
-        if ((target = this.targetCache.get(field.getReference())) != null) {
+        if ((target = this.lut.get(field.getReference())) != null) {
             return target;
         }
 
@@ -79,7 +81,7 @@ public class Accessors {
             target = result;
         }
 
-        this.targetCache.put(field.getReference(), target);
+        this.lut.put(field.getReference(), target);
 
         return target;
     }
