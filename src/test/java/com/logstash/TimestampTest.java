@@ -16,9 +16,9 @@ public class TimestampTest {
     }
 
     @Test
-    public void testToJson() throws Exception {
+    public void testToIso8601() throws Exception {
         Timestamp t = new Timestamp("2014-09-23T00:00:00-0800");
-        assertEquals("\"2014-09-23T08:00:00.000Z\"", t.toJson());
+        assertEquals("2014-09-23T08:00:00.000Z", t.toIso8601());
     }
 
     // Timestamp should always be in a UTC representation
