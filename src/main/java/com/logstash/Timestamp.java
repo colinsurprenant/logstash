@@ -1,10 +1,13 @@
 package com.logstash;
 
+
+import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 
+@JsonSerialize(using = TimestampSerializer.class)
 public class Timestamp {
 
     private DateTime time;
@@ -43,11 +46,7 @@ public class Timestamp {
         return this.iso8601Formatter.print(this.time);
     }
 
-    public String toJson() {
-        return "\"" + toIso8601() + "\"";
-    }
-
     public String toString() {
         return toIso8601();
     }
-}
+ }
