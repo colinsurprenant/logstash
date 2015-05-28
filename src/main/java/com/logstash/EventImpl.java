@@ -102,12 +102,14 @@ public class EventImpl implements Event, Cloneable, Serializable {
 
     @Override
     public Event overwrite(Event e) {
+        // TODO: implement
         throw new UnsupportedOperationException("overwrite() not yet implemented");
     }
 
 
     @Override
     public Event append(Event e) {
+        // TODO: implement
         throw new UnsupportedOperationException("append() not yet implemented");
     }
 
