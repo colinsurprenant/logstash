@@ -10,13 +10,22 @@ describe LogStash::Event do
     end
 
     it "should serialize deep hash values" do
-      e = LogStash::Event.new({"foo" => {"bar" => 1, "baz" => 1.0}, "@timestamp" => "2015-05-28T23:02:05.350Z"})
-      expect(e.to_json).to eq("{\"foo\":{\"bar\":1,\"baz\":1.0},\"@timestamp\":\"2015-05-28T23:02:05.350Z\",\"@version\":\"1\"}")
+      e = LogStash::Event.new({"foo" => {"bar" => 1, "baz" => 1.0, "biz" => "boz"}, "@timestamp" => "2015-05-28T23:02:05.350Z"})
+      expect(e.to_json).to eq("{\"foo\":{\"bar\":1,\"baz\":1.0,\"biz\":\"boz\"},\"@timestamp\":\"2015-05-28T23:02:05.350Z\",\"@version\":\"1\"}")
     end
 
     it "should serialize deep array values" do
       e = LogStash::Event.new({"foo" => ["bar", 1, 1.0], "@timestamp" => "2015-05-28T23:02:05.350Z"})
       expect(e.to_json).to eq("{\"foo\":[\"bar\",1,1.0],\"@timestamp\":\"2015-05-28T23:02:05.350Z\",\"@version\":\"1\"}")
+    end
+
+    it "should serialize deep hash from field reference assignments" do
+      e = LogStash::Event.new({"@timestamp" => "2015-05-28T23:02:05.350Z"})
+      e["foo"] = "bar"
+      e["bar"] = 1
+      e["baz"] = 1.0
+      e["[fancy][pants][socks]"] = "shoes"
+      expect(e.to_json).to eq("{\"@timestamp\":\"2015-05-28T23:02:05.350Z\",\"@version\":\"1\",\"foo\":\"bar\",\"bar\":1,\"baz\":1.0,\"fancy\":{\"pants\":{\"socks\":\"shoes\"}}}")
     end
   end
 
