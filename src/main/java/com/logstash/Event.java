@@ -15,6 +15,8 @@ public interface Event {
 
     boolean isCancelled();
 
+    Event clone();
+
     Timestamp getTimestamp();
 
     void setTimestamp(Timestamp t);
