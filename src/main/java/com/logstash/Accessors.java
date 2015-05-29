@@ -15,13 +15,13 @@ public class Accessors {
     }
 
     public Object get(String reference) {
-        FieldReference field = FieldReference.parse(reference);
+        FieldReference field = PathCache.getInstance().cache(reference);
         Object target = findTarget(field);
         return (target == null) ? null : fetch(target, field.getKey());
     }
 
     public Object set(String reference, Object value) {
-        FieldReference field = FieldReference.parse(reference);
+        FieldReference field = PathCache.getInstance().cache(reference);
         Object target = findCreateTarget(field);
         return store(target, field.getKey(), value);
     }
