@@ -1,6 +1,8 @@
 package com.logstash;
 
+import com.logstash.ext.JrubyTimestampExtLibrary;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.joda.time.DateTime;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -77,6 +79,7 @@ public class EventImpl implements Event, Cloneable, Serializable {
     @Override
     public void setTimestamp(Timestamp t) {
         this.timestamp = t;
+        this.data.put(TIMESTAMP, this.timestamp);
     }
 
     @Override
@@ -154,10 +157,14 @@ public class EventImpl implements Event, Cloneable, Serializable {
             } else if (o instanceof String) {
                 // second most frequent
                 return new Timestamp((String) o);
+            } else if (o instanceof JrubyTimestampExtLibrary.RubyTimestamp) {
+                return new Timestamp(((JrubyTimestampExtLibrary.RubyTimestamp) o).getTimestamp());
             } else if (o instanceof Timestamp) {
                 return new Timestamp((Timestamp) o);
             } else if (o instanceof Long) {
                 return new Timestamp((Long) o);
+            } else if (o instanceof DateTime) {
+                return new Timestamp((DateTime) o);
             } else if (o instanceof Date) {
                 return new Timestamp((Date) o);
             } else {
