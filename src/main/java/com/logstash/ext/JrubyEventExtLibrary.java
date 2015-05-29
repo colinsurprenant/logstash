@@ -55,6 +55,8 @@ public class JrubyEventExtLibrary implements Library {
                 this.event = new EventImpl();
             } else if (data instanceof Map) {
                 this.event = new EventImpl((Map)data);
+            } else if (Map.class.isAssignableFrom(data.getJavaClass())) {
+                this.event = new EventImpl((Map)data.toJava(Map.class));
             } else {
                 throw context.runtime.newTypeError("wrong argument type " + data.getMetaClass() + " (expected Hash)");
             }
@@ -70,8 +72,13 @@ public class JrubyEventExtLibrary implements Library {
         @JRubyMethod(name = "[]=", required = 2)
         public IRubyObject ruby_set_field(ThreadContext context, RubyString reference, IRubyObject value)
         {
-            // TODO: add value type guard here?
-            this.event.setField(reference.asJavaString(), value);
+            if (value instanceof RubyString) {
+                this.event.setField(reference.asJavaString(), ((RubyString)value).asJavaString());
+            } else if (value instanceof RubyInteger) {
+                this.event.setField(reference.asJavaString(), ((RubyInteger)value).getLongValue());
+            } else if (value instanceof RubyFloat) {
+                this.event.setField(reference.asJavaString(), ((RubyFloat)value).getDoubleValue());
+            }
             return value;
         }
 
@@ -150,9 +157,9 @@ public class JrubyEventExtLibrary implements Library {
         }
 
         @JRubyMethod(name = "sprintf", required = 1)
-        public IRubyObject ruby_sprintf(ThreadContext context, RubyString format)
+        public IRubyObject ruby_sprintf(ThreadContext context, IRubyObject format)
         {
-            return RubyString.newString(context.runtime, event.sprintf(format.asJavaString()));
+            return RubyString.newString(context.runtime, event.sprintf(format.toString()));
         }
 
         @JRubyMethod(name = "to_s")
@@ -174,11 +181,17 @@ public class JrubyEventExtLibrary implements Library {
             return JavaUtil.convertJavaToUsableRubyObject(context.runtime, this.event);
         }
 
-        @JRubyMethod(name = "to_json")
-        public IRubyObject ruby_to_json(ThreadContext context)
+        @JRubyMethod(name = "to_json", rest = true)
+        public IRubyObject ruby_to_json(ThreadContext context, IRubyObject[] args)
             throws IOException
         {
             return RubyString.newString(context.runtime, event.toJson());
+        }
+
+        @JRubyMethod(name = "validate_value", required = 1, meta = true)
+        public static IRubyObject ruby_validate_value(ThreadContext context, IRubyObject recv, IRubyObject value)
+        {
+            return value;
         }
     }
 }
