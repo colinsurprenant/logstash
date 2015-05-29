@@ -7,6 +7,8 @@ import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 
+import java.util.Date;
+
 @JsonSerialize(using = TimestampSerializer.class)
 public class Timestamp {
 
@@ -32,6 +34,10 @@ public class Timestamp {
 
     public Timestamp(Long epoch_milliseconds) {
         this.time = new DateTime(epoch_milliseconds, DateTimeZone.UTC);
+    }
+
+    public Timestamp(Date date) {
+        this.time = new DateTime(date, DateTimeZone.UTC);
     }
 
     public DateTime getTime() {
