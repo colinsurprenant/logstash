@@ -26,14 +26,15 @@ public class Accessors {
         return store(target, field.getKey(), value);
     }
 
-    public Object del(String path) {
+    public Object del(String reference) {
         // TODO: implement
         return null;
     }
 
-    public boolean includes(String path) {
-        // TODO: implemnent
-        return false;
+    public boolean includes(String reference) {
+        FieldReference field = PathCache.getInstance().cache(reference);
+        Object target = findTarget(field);
+        return (target == null) ? false : (fetch(target, field.getKey()) != null);
     }
 
     private Object findTarget(FieldReference field) {
