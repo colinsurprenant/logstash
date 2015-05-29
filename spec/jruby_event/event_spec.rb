@@ -2,25 +2,27 @@ $LOAD_PATH << File.expand_path("../../../lib", __FILE__)
 
 require "jruby_event/jruby_event"
 
+TIMESTAMP = "@timestamp"
+
 describe LogStash::Event do
   context "to_json" do
     it "should serialize snmple values" do
-      e = LogStash::Event.new({"foo" => "bar", "bar" => 1, "baz" => 1.0, "@timestamp" => "2015-05-28T23:02:05.350Z"})
+      e = LogStash::Event.new({"foo" => "bar", "bar" => 1, "baz" => 1.0, TIMESTAMP => "2015-05-28T23:02:05.350Z"})
       expect(e.to_json).to eq("{\"foo\":\"bar\",\"bar\":1,\"baz\":1.0,\"@timestamp\":\"2015-05-28T23:02:05.350Z\",\"@version\":\"1\"}")
     end
 
     it "should serialize deep hash values" do
-      e = LogStash::Event.new({"foo" => {"bar" => 1, "baz" => 1.0, "biz" => "boz"}, "@timestamp" => "2015-05-28T23:02:05.350Z"})
+      e = LogStash::Event.new({"foo" => {"bar" => 1, "baz" => 1.0, "biz" => "boz"}, TIMESTAMP => "2015-05-28T23:02:05.350Z"})
       expect(e.to_json).to eq("{\"foo\":{\"bar\":1,\"baz\":1.0,\"biz\":\"boz\"},\"@timestamp\":\"2015-05-28T23:02:05.350Z\",\"@version\":\"1\"}")
     end
 
     it "should serialize deep array values" do
-      e = LogStash::Event.new({"foo" => ["bar", 1, 1.0], "@timestamp" => "2015-05-28T23:02:05.350Z"})
+      e = LogStash::Event.new({"foo" => ["bar", 1, 1.0], TIMESTAMP => "2015-05-28T23:02:05.350Z"})
       expect(e.to_json).to eq("{\"foo\":[\"bar\",1,1.0],\"@timestamp\":\"2015-05-28T23:02:05.350Z\",\"@version\":\"1\"}")
     end
 
     it "should serialize deep hash from field reference assignments" do
-      e = LogStash::Event.new({"@timestamp" => "2015-05-28T23:02:05.350Z"})
+      e = LogStash::Event.new({TIMESTAMP => "2015-05-28T23:02:05.350Z"})
       e["foo"] = "bar"
       e["bar"] = 1
       e["baz"] = 1.0
@@ -31,15 +33,15 @@ describe LogStash::Event do
 
   context "[]" do
     it "should get simple values" do
-      e = LogStash::Event.new({"foo" => "bar", "bar" => 1, "baz" => 1.0, "@timestamp" => "2015-05-28T23:02:05.350Z"})
+      e = LogStash::Event.new({"foo" => "bar", "bar" => 1, "baz" => 1.0, TIMESTAMP => "2015-05-28T23:02:05.350Z"})
       expect(e["foo"]).to eq("bar")
       expect(e["[foo]"]).to eq("bar")
       expect(e["bar"]).to eq(1)
       expect(e["[bar]"]).to eq(1)
       expect(e["baz"]).to eq(1.0)
       expect(e["[baz]"]).to eq(1.0)
-      expect(e["@timestamp"].to_s).to eq("2015-05-28T23:02:05.350Z")
-      expect(e["[@timestamp]"].to_s).to eq("2015-05-28T23:02:05.350Z")
+      expect(e[TIMESTAMP].to_s).to eq("2015-05-28T23:02:05.350Z")
+      expect(e["[#{TIMESTAMP}]"].to_s).to eq("2015-05-28T23:02:05.350Z")
     end
 
     it "should get deep hash values" do
@@ -84,6 +86,25 @@ describe LogStash::Event do
       expect(e["[foo][2]"] = 1.0 ).to eq(1.0)
       expect(e["[foo][2]"]).to eq(1.0)
       expect(e["[foo][3]"]).to be_nil
+    end
+  end
+
+  context "timestamp" do
+    it "getters should present a Ruby LogStash::Timestamp" do
+      e = LogStash::Event.new()
+      expect(e.timestamp.class).to eq(LogStash::Timestamp)
+      expect(e[TIMESTAMP].class).to eq(LogStash::Timestamp)
+    end
+
+    it "to_hash should inject a Ruby LogStash::Timestamp" do
+      e = LogStash::Event.new()
+
+      expect(e.to_java).to be_kind_of(Java::ComLogstash::Event)
+      expect(e.to_java.get_field(TIMESTAMP)).to be_kind_of(Java::ComLogstash::Timestamp)
+
+      expect(e.to_hash[TIMESTAMP]).to be_kind_of(LogStash::Timestamp)
+      # now make sure the original map was not touched
+      expect(e.to_java.get_field(TIMESTAMP)).to be_kind_of(Java::ComLogstash::Timestamp)
     end
   end
 end

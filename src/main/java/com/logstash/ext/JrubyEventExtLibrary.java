@@ -2,10 +2,12 @@ package com.logstash.ext;
 
 import com.logstash.Event;
 import com.logstash.EventImpl;
+import com.logstash.PathCache;
 import com.logstash.Timestamp;
 import org.jruby.*;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
+import org.jruby.java.proxies.MapJavaProxy;
 import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.Arity;
 import org.jruby.runtime.ObjectAllocator;
@@ -14,6 +16,7 @@ import org.jruby.runtime.builtin.IRubyObject;
 import org.jruby.runtime.load.Library;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.*;
 
 public class JrubyEventExtLibrary implements Library {
@@ -66,18 +69,39 @@ public class JrubyEventExtLibrary implements Library {
         @JRubyMethod(name = "[]", required = 1)
         public IRubyObject ruby_get_field(ThreadContext context, RubyString reference)
         {
-            return JavaUtil.convertJavaToRuby(context.runtime, this.event.getField(reference.asJavaString()));
+            String r = reference.asJavaString();
+            if (PathCache.getInstance().isTimestamp(r)) {
+                return JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(context.runtime, context.runtime.getModule("LogStash").getClass("Timestamp"), this.event.getTimestamp());
+            } else {
+                Object value = this.event.getField(r);
+                if (value instanceof Timestamp) {
+                    return JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(context.runtime, context.runtime.getModule("LogStash").getClass("Timestamp"), (Timestamp)value);
+                } else {
+                    return JavaUtil.convertJavaToRuby(context.runtime, value);
+                }
+            }
         }
 
         @JRubyMethod(name = "[]=", required = 2)
         public IRubyObject ruby_set_field(ThreadContext context, RubyString reference, IRubyObject value)
         {
-            if (value instanceof RubyString) {
-                this.event.setField(reference.asJavaString(), ((RubyString)value).asJavaString());
-            } else if (value instanceof RubyInteger) {
-                this.event.setField(reference.asJavaString(), ((RubyInteger)value).getLongValue());
-            } else if (value instanceof RubyFloat) {
-                this.event.setField(reference.asJavaString(), ((RubyFloat)value).getDoubleValue());
+            String r = reference.asJavaString();
+            if (PathCache.getInstance().isTimestamp(r)) {
+                if (!(value instanceof JrubyTimestampExtLibrary.RubyTimestamp)) {
+                    throw context.runtime.newTypeError("wrong argument type " + value.getMetaClass() + " (expected LogStash::Timestamp)");
+                }
+                this.event.setTimestamp(((JrubyTimestampExtLibrary.RubyTimestamp)value).getTimestamp());
+            } else {
+                if (value instanceof RubyString) {
+                    this.event.setField(r, ((RubyString) value).asJavaString());
+                } else if (value instanceof RubyInteger) {
+                    this.event.setField(r, ((RubyInteger) value).getLongValue());
+                } else if (value instanceof RubyFloat) {
+                    this.event.setField(r, ((RubyFloat) value).getDoubleValue());
+                } else if (value instanceof JrubyTimestampExtLibrary.RubyTimestamp) {
+                    // RubyTimestamp could be assigned in another field thant @timestamp
+                    this.event.setField(r, ((JrubyTimestampExtLibrary.RubyTimestamp) value).getTimestamp());
+                }
             }
             return value;
         }
@@ -105,16 +129,17 @@ public class JrubyEventExtLibrary implements Library {
         @JRubyMethod(name = "timestamp")
         public IRubyObject ruby_get_timestamp(ThreadContext context)
         {
-            // TODO: properly implement
-            return JavaUtil.convertJavaToRuby(context.runtime, this.event.getTimestamp());
+            return JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(context.runtime, context.runtime.getModule("LogStash").getClass("Timestamp"), this.event.getTimestamp());
         }
 
         @JRubyMethod(name = "timestamp=", required = 1)
-        public IRubyObject ruby_set_timestamp(ThreadContext context, IRubyObject value)
+        public IRubyObject ruby_set_timestamp(ThreadContext context, IRubyObject timestamp)
         {
-            // TODO: properly implement
-            this.event.setTimestamp((Timestamp)value.toJava(Timestamp.class));
-            return JavaUtil.convertJavaToRuby(context.runtime, this.event.getTimestamp());
+            if (!(timestamp instanceof JrubyTimestampExtLibrary.RubyTimestamp)) {
+                throw context.runtime.newTypeError("wrong argument type " + timestamp.getMetaClass() + " (expected LogStash::Timestamp)");
+            }
+            this.event.setTimestamp(((JrubyTimestampExtLibrary.RubyTimestamp)timestamp).getTimestamp());
+            return timestamp;
         }
 
         @JRubyMethod(name = "include?", required = 1)
@@ -171,8 +196,11 @@ public class JrubyEventExtLibrary implements Library {
         @JRubyMethod(name = "to_hash")
         public IRubyObject ruby_to_hash(ThreadContext context)
         {
-            // TODO: should we explicitely convert to RubyHash?
-            return JavaUtil.convertJavaToUsableRubyObject(context.runtime, this.event.toMap());
+            // TODO: is this the most efficient?
+            RubyHash hash = JavaUtil.convertJavaToUsableRubyObject(context.runtime, this.event.toMap()).convertToHash();
+            // inject RubyTimestamp in new hash
+            hash.put(PathCache.TIMESTAMP, JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(context.runtime, context.runtime.getModule("LogStash").getClass("Timestamp"), this.event.getTimestamp()));
+            return hash;
         }
 
         @JRubyMethod(name = "to_java")
@@ -191,6 +219,7 @@ public class JrubyEventExtLibrary implements Library {
         @JRubyMethod(name = "validate_value", required = 1, meta = true)
         public static IRubyObject ruby_validate_value(ThreadContext context, IRubyObject recv, IRubyObject value)
         {
+            // TODO: add UTF-8 validation
             return value;
         }
     }
