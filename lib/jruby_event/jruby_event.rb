@@ -16,3 +16,4 @@ require_relative "jackson-core-asl-1.9.13.jar"
 require_relative "jackson-mapper-asl-1.9.13.jar"
 
 require "jruby_event_ext"
+require "jruby_timestamp_ext"
