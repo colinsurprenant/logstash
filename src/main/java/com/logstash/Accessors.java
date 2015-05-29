@@ -88,13 +88,21 @@ public class Accessors {
 
     private Object fetch(Object target, String key) {
         if (target instanceof Map) {
-            return ((Map<String, Object>) target).get(key);
+            Object result = ((Map<String, Object>) target).get(key);
+//            if (result != null) {
+//                System.out.println("fetch class=" + result.getClass().getName() + ", toString=" + result.toString());
+//            }
+            return result;
         } else if (target instanceof List) {
             int i = Integer.parseInt(key);
             if (i < 0 || i >= ((List) target).size()) {
                 return null;
             }
-            return ((List<Object>) target).get(i);
+            Object result = ((List<Object>) target).get(i);
+//            if (result != null) {
+//                System.out.println("fetch class=" + result.getClass().getName() + ", toString=" + result.toString());
+//            }
+            return result;
         } else {
             throw new ClassCastException("expecting List or Map");
         }
