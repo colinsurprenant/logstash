@@ -4,10 +4,7 @@ import org.codehaus.jackson.map.ObjectMapper;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 
 public class EventImpl implements Event, Cloneable, Serializable {
@@ -45,6 +42,16 @@ public class EventImpl implements Event, Cloneable, Serializable {
         this.timestamp = initTimestamp(data.get(TIMESTAMP));
         this.data.put(TIMESTAMP, this.timestamp);
         this.accessors = new Accessors(this.data);
+    }
+
+    @Override
+    public Map<String, Object> getData() {
+        return this.data;
+    }
+
+    @Override
+    public Accessors getAccessors() {
+        return this.accessors;
     }
 
     @Override
@@ -92,7 +99,7 @@ public class EventImpl implements Event, Cloneable, Serializable {
 
     @Override
     public String toJson() throws IOException {
-        return mapper.writeValueAsString(this.data);
+        return mapper.writeValueAsString((Map<String, Object>)this.data);
     }
 
     @Override
@@ -102,8 +109,12 @@ public class EventImpl implements Event, Cloneable, Serializable {
 
     @Override
     public Event overwrite(Event e) {
-        // TODO: implement
-        throw new UnsupportedOperationException("overwrite() not yet implemented");
+        this.data = e.getData();
+        this.accessors = e.getAccessors();
+        this.cancelled = e.isCancelled();
+        this.timestamp = e.getTimestamp();
+
+        return this;
     }
 
 
@@ -147,6 +158,8 @@ public class EventImpl implements Event, Cloneable, Serializable {
                 return new Timestamp((Timestamp) o);
             } else if (o instanceof Long) {
                 return new Timestamp((Long) o);
+            } else if (o instanceof Date) {
+                return new Timestamp((Date) o);
             } else {
                 // TODO: add logging
                 return new Timestamp();

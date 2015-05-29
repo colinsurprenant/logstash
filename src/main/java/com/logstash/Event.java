@@ -17,6 +17,10 @@ public interface Event {
 
     Event clone();
 
+    Map<String, Object> getData();
+
+    Accessors getAccessors();
+
     Timestamp getTimestamp();
 
     void setTimestamp(Timestamp t);
