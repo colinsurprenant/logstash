@@ -35,8 +35,29 @@ public class JrubyTimestampExtLibrary implements Library {
         }
 
         public RubyTimestamp(Ruby runtime, RubyClass klass, Timestamp timestamp) {
-            super(runtime, klass);
+            this(runtime, klass);
             this.timestamp = timestamp;
+        }
+
+        public RubyTimestamp(Ruby runtime, Timestamp timestamp) {
+            this(runtime, runtime.getModule("LogStash").getClass("Timestamp"), timestamp);
+        }
+
+        public RubyTimestamp(Ruby runtime) {
+            this(runtime, new Timestamp());
+        }
+
+        public static RubyTimestamp newRubyTimestamp(Ruby runtime) {
+            return new RubyTimestamp(runtime);
+        }
+
+        public static RubyTimestamp newRubyTimestamp(Ruby runtime, long epoch) {
+            // Ruby epoch is in seconds, Java in milliseconds
+            return new RubyTimestamp(runtime, new Timestamp(epoch * 1000));
+        }
+
+        public static RubyTimestamp newRubyTimestamp(Ruby runtime, Timestamp timestamp) {
+            return new RubyTimestamp(runtime, timestamp);
         }
 
         public Timestamp getTimestamp() {
@@ -45,24 +66,6 @@ public class JrubyTimestampExtLibrary implements Library {
 
         public void setTimestamp(Timestamp timestamp) {
             this.timestamp = timestamp;
-        }
-
-        public static RubyTimestamp newRubyTimestamp(Ruby runtime, RubyClass klass) {
-            RubyTimestamp rubyTimestamp = new RubyTimestamp(runtime, klass);
-            rubyTimestamp.setTimestamp(new Timestamp());
-            return rubyTimestamp;
-        }
-
-        public static RubyTimestamp newRubyTimestamp(Ruby runtime, RubyClass klass, long epoch) {
-            RubyTimestamp rubyTimestamp = new RubyTimestamp(runtime, klass);
-            // Ruby epoch is in seconds, Java in milliseconds
-            rubyTimestamp.setTimestamp(new Timestamp(epoch * 1000));
-            return rubyTimestamp;
-        }
-
-        public static RubyTimestamp newRubyTimestamp(Ruby runtime, RubyClass klass, Timestamp timestamp) {
-            RubyTimestamp rubyTimestamp = new RubyTimestamp(runtime, klass, timestamp);
-            return rubyTimestamp;
         }
 
         // def initialize(time = Time.new)
@@ -125,13 +128,13 @@ public class JrubyTimestampExtLibrary implements Library {
                 throw context.runtime.newTypeError("wrong argument type " + epoch.getMetaClass() + " (expected integer Fixnum)");
             }
             //
-            return RubyTimestamp.newRubyTimestamp(context.runtime, context.runtime.getModule("LogStash").getClass("Timestamp"), (((RubyInteger) epoch).getLongValue()));
+            return RubyTimestamp.newRubyTimestamp(context.runtime, (((RubyInteger) epoch).getLongValue()));
         }
 
         @JRubyMethod(name = "now", meta = true)
         public static IRubyObject ruby_at(ThreadContext context, IRubyObject recv)
         {
-            return RubyTimestamp.newRubyTimestamp(context.runtime, context.runtime.getModule("LogStash").getClass("Timestamp"));
+            return RubyTimestamp.newRubyTimestamp(context.runtime);
         }
     }
 }

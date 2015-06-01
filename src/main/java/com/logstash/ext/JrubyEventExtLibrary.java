@@ -20,6 +20,7 @@ import java.nio.file.Path;
 import java.util.*;
 
 public class JrubyEventExtLibrary implements Library {
+
     public void load(Ruby runtime, boolean wrap) throws IOException {
         RubyModule module = runtime.defineModule("LogStash");
         RubyClass clazz = runtime.defineClassUnder("Event", runtime.getObject(), new ObjectAllocator() {
@@ -37,6 +38,19 @@ public class JrubyEventExtLibrary implements Library {
 
         public RubyEvent(Ruby runtime, RubyClass klass) {
             super(runtime, klass);
+        }
+
+        public RubyEvent(Ruby runtime) {
+            this(runtime, runtime.getModule("LogStash").getClass("Timestamp"));
+        }
+
+        public RubyEvent(Ruby runtime, Event event) {
+            this(runtime);
+            this.event = event;
+        }
+
+        public static RubyEvent newRubyEvent(Ruby runtime, Event event) {
+            return new RubyEvent(runtime, event);
         }
 
         public Event getEvent() {
@@ -71,11 +85,11 @@ public class JrubyEventExtLibrary implements Library {
         {
             String r = reference.asJavaString();
             if (PathCache.getInstance().isTimestamp(r)) {
-                return JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(context.runtime, context.runtime.getModule("LogStash").getClass("Timestamp"), this.event.getTimestamp());
+                return JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(context.runtime, this.event.getTimestamp());
             } else {
                 Object value = this.event.getField(r);
                 if (value instanceof Timestamp) {
-                    return JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(context.runtime, context.runtime.getModule("LogStash").getClass("Timestamp"), (Timestamp)value);
+                    return JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(context.runtime, (Timestamp)value);
                 } else {
                     return JavaUtil.convertJavaToRuby(context.runtime, value);
                 }
@@ -129,7 +143,7 @@ public class JrubyEventExtLibrary implements Library {
         @JRubyMethod(name = "timestamp")
         public IRubyObject ruby_get_timestamp(ThreadContext context)
         {
-            return JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(context.runtime, context.runtime.getModule("LogStash").getClass("Timestamp"), this.event.getTimestamp());
+            return JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(context.runtime, this.event.getTimestamp());
         }
 
         @JRubyMethod(name = "timestamp=", required = 1)
@@ -157,28 +171,25 @@ public class JrubyEventExtLibrary implements Library {
         @JRubyMethod(name = "clone")
         public IRubyObject ruby_clone(ThreadContext context)
         {
-            // TODO: no idea about getClassClass - wild guess - need to understasn how to properly instantiate a RubyEvent
-            RubyEvent result = new RubyEvent(context.runtime, context.runtime.getClassClass());
-            result.setEvent(this.event.clone());
-            return result;
+            return RubyEvent.newRubyEvent(context.runtime, this.event.clone());
         }
 
         @JRubyMethod(name = "overwrite", required = 1)
         public IRubyObject ruby_overwrite(ThreadContext context, IRubyObject value)
         {
-            // TODO: no idea about getClassClass - wild guess - need to understasn how to properly instantiate a RubyEvent
-            RubyEvent result = new RubyEvent(context.runtime, context.runtime.getClassClass());
-            result.setEvent(this.event.overwrite(((RubyEvent)value).event));
-            return result;
+            if (!(value instanceof RubyEvent)) {
+                throw context.runtime.newTypeError("wrong argument type " + value.getMetaClass() + " (expected LogStash::Event)");
+            }
+            return RubyEvent.newRubyEvent(context.runtime, this.event.overwrite(((RubyEvent) value).event));
         }
 
         @JRubyMethod(name = "append", required = 1)
         public IRubyObject ruby_append(ThreadContext context, IRubyObject value)
         {
-            // TODO: no idea about getClassClass - wild guess - need to understasn how to properly instantiate a RubyEvent
-            RubyEvent result = new RubyEvent(context.runtime, context.runtime.getClassClass());
-            result.setEvent(this.event.append(((RubyEvent)value).event));
-            return result;
+            if (!(value instanceof RubyEvent)) {
+                throw context.runtime.newTypeError("wrong argument type " + value.getMetaClass() + " (expected LogStash::Event)");
+            }
+            return RubyEvent.newRubyEvent(context.runtime, this.event.append(((RubyEvent)value).event));
         }
 
         @JRubyMethod(name = "sprintf", required = 1)
@@ -199,7 +210,7 @@ public class JrubyEventExtLibrary implements Library {
             // TODO: is this the most efficient?
             RubyHash hash = JavaUtil.convertJavaToUsableRubyObject(context.runtime, this.event.toMap()).convertToHash();
             // inject RubyTimestamp in new hash
-            hash.put(PathCache.TIMESTAMP, JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(context.runtime, context.runtime.getModule("LogStash").getClass("Timestamp"), this.event.getTimestamp()));
+            hash.put(PathCache.TIMESTAMP, JrubyTimestampExtLibrary.RubyTimestamp.newRubyTimestamp(context.runtime, this.event.getTimestamp()));
             return hash;
         }
 
