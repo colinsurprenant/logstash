@@ -1,6 +1,7 @@
 package com.logstash;
 
 
+import org.joda.time.DateTime;
 import org.junit.Test;
 
 import java.util.HashMap;
@@ -89,6 +90,13 @@ public class StringInterpolationTest {
         assertEquals("v", si.evaluate(event, path));
     }
 
+    @Test
+    public void TestEpoch() {
+        Event event = getTestEvent();
+        String path = "%{+%s}";
+        StringInterpolation si = StringInterpolation.getInstance();
+        assertEquals("1443672000", si.evaluate(event, path));
+    }
 
     public Event getTestEvent() {
         Map data = new HashMap();
@@ -99,6 +107,7 @@ public class StringInterpolationTest {
         data.put("bar", "foo");
         data.put("awesome", "logstash");
         data.put("j", inner);
+        data.put("@timestamp", new DateTime(2015, 10, 1, 0, 0, 0));
 
 
         Event event = new EventImpl(data);

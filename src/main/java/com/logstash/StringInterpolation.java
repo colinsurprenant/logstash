@@ -2,6 +2,7 @@ package com.logstash;
 
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -67,11 +68,12 @@ public class StringInterpolation {
         }
     }
 
-    // TODO: add support for array, hash, float and epoch
     public TemplateNode identifyTag(String tag) {
-        // Doesnt support parsing the float yet
-        if(tag.charAt(0) == '+') {
-            return new DateNode(tag.substring(1));
+        if(tag.equals("+%s")) {
+            return new EpochNode();
+        } else if(tag.charAt(0) == '+') {
+                return new DateNode(tag.substring(1));
+
         } else {
             return new KeyNode(tag);
         }

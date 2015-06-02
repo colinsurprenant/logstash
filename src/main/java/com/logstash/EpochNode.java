@@ -8,8 +8,6 @@ public class EpochNode implements TemplateNode {
 
     @Override
     public String evaluate(Event event) {
-        // TODO: Change this for the right call
-        Long epoch = 1L;
-        return String.valueOf(epoch);
+        return String.valueOf(event.getTimestamp().getTime().getMillis() / 1000);
     }
 }
