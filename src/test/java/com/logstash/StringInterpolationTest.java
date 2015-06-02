@@ -73,10 +73,34 @@ public class StringInterpolationTest {
         assertEquals("/full/%{+YYY/web", si.evaluate(event, path));
     }
 
+    @Test
+    public void TestStringIsOneDateTag() {
+        Event event = getTestEvent();
+        String path = "%{+YYYY}";
+        StringInterpolation si = StringInterpolation.getInstance();
+        assertEquals("2015", si.evaluate(event, path));
+    }
+
+    @Test
+    public void TestFieldRef() {
+        Event event = getTestEvent();
+        String path = "%{[j][k1]}";
+        StringInterpolation si = StringInterpolation.getInstance();
+        assertEquals("v", si.evaluate(event, path));
+    }
+
+
     public Event getTestEvent() {
         Map data = new HashMap();
+        Map inner = new HashMap();
+
+        inner.put("k1", "v");
+
         data.put("bar", "foo");
         data.put("awesome", "logstash");
+        data.put("j", inner);
+
+
         Event event = new EventImpl(data);
 
         return event;

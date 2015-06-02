@@ -46,11 +46,11 @@ public class StringInterpolation {
             while (matcher.find()) {
                 if (matcher.start() > 0) {
                     compiledTemplate.add(new StaticNode(template.substring(pos, matcher.start())));
-                    pos = matcher.end();
                 }
 
                 tag = matcher.group(1);
                 compiledTemplate.add(identifyTag(tag));
+                pos = matcher.end();
             }
 
             if(pos < template.length() - 1) {

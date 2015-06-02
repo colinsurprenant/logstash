@@ -19,7 +19,7 @@ public class KeyNode implements TemplateNode {
         Object value = event.getField(this.key);
 
         if (value != null) {
-            return String.valueOf(event.getField(this.key));
+            return event.getField(this.key).toString();
         } else {
             return "%{" + this.key + "}";
         }

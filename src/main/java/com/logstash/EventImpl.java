@@ -134,8 +134,7 @@ public class EventImpl implements Event, Cloneable, Serializable {
 
     @Override
     public String sprintf(String s) {
-        // TODO: implement sprintf
-        return s;
+        return StringInterpolation.getInstance().evaluate(this, s);
     }
 
     public Event clone() {
