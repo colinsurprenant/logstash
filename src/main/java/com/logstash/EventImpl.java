@@ -133,7 +133,7 @@ public class EventImpl implements Event, Cloneable, Serializable {
     }
 
     @Override
-    public String sprintf(String s) {
+    public String sprintf(String s) throws IOException {
         return StringInterpolation.getInstance().evaluate(this, s);
     }
 

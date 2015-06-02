@@ -1,6 +1,7 @@
 package com.logstash;
 
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
@@ -28,7 +29,7 @@ public class StringInterpolation {
         this.cache = new ConcurrentHashMap<>();
     }
 
-    public String evaluate(Event event, String template) {
+    public String evaluate(Event event, String template) throws IOException {
         TemplateNode compiledTemplate = (TemplateNode) this.cache.get(template);
 
         if(compiledTemplate == null) {
