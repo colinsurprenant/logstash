@@ -16,7 +16,15 @@ public class StringInterpolation {
     }
 
     private StringInterpolation() {
-        // TODO: this may need some tweaking for the concurrency level to get better memory usage.
+        // TODO:
+        // This may need some tweaking for the concurrency level to get better memory usage.
+        // The current implementation doesn't allow the keys to expire, I think under normal usage
+        // the keys will converge to a fixed number.
+        //
+        // If this code make logstash goes OOM, we have the following options:
+        //  - If the key doesn't contains a `%` do not cache it, this will reduce the key size at a performance cost.
+        //  - Use some kind LRU cache
+        //  - Create a new data structure that use weakref or use Google Guava for the cache https://code.google.com/p/guava-libraries/
         this.cache = new ConcurrentHashMap<>();
     }
 
