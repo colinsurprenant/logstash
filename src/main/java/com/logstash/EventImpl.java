@@ -52,8 +52,18 @@ public class EventImpl implements Event, Cloneable, Serializable {
     }
 
     @Override
+    public void setData(Map<String, Object> data) {
+        this.data = data;
+    }
+
+    @Override
     public Accessors getAccessors() {
         return this.accessors;
+    }
+
+    @Override
+    public void setAccessors(Accessors accessors) {
+        this.accessors = accessors;
     }
 
     @Override
@@ -137,8 +147,12 @@ public class EventImpl implements Event, Cloneable, Serializable {
         return StringInterpolation.getInstance().evaluate(this, s);
     }
 
-    public Event clone() {
-        throw new UnsupportedOperationException("clone() not yet implemented");
+    public Event clone()
+            throws CloneNotSupportedException
+    {
+        Event clone = (Event)super.clone();
+        clone.setAccessors(new Accessors(clone.getData()));
+        return clone;
     }
 
     public String toString() {
