@@ -108,6 +108,14 @@ describe LogStash::Event do
       # now make sure the original map was not touched
       expect(e.to_java.get_field(TIMESTAMP)).to be_kind_of(Java::ComLogstash::Timestamp)
     end
+
+    it "should set timestamp" do
+      e = LogStash::Event.new
+      now = Time.now
+      e["@timestamp"] = LogStash::Timestamp.at(now.to_i)
+      expect(e.timestamp.to_i).to eq(now.to_i)
+      expect(e["@timestamp"].to_i).to eq(now.to_i)
+    end
   end
 
   context "append" do
