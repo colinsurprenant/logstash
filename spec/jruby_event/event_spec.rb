@@ -1,6 +1,8 @@
 $LOAD_PATH << File.expand_path("../../../lib", __FILE__)
 
 require "jruby_event/jruby_event"
+require "logstash/util"
+require "logstash/event"
 
 TIMESTAMP = "@timestamp"
 
@@ -105,6 +107,23 @@ describe LogStash::Event do
       expect(e.to_hash[TIMESTAMP]).to be_kind_of(LogStash::Timestamp)
       # now make sure the original map was not touched
       expect(e.to_java.get_field(TIMESTAMP)).to be_kind_of(Java::ComLogstash::Timestamp)
+    end
+  end
+
+  context "append" do
+    it "show append" do
+      event = LogStash::Event.new("message" => "hello world")
+      event.append(LogStash::Event.new("message" => "another thing"))
+      expect(event["message"]).to eq(["hello world", "another thing"])
+    end
+  end
+
+  context "tags" do
+    it "should tag" do
+      event = LogStash::Event.new("message" => "hello world")
+      tag = "foo"
+      event["tags"] = []
+      event["tags"] << tag unless event["tags"].include?(tag)
     end
   end
 end

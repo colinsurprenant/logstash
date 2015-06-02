@@ -33,7 +33,7 @@ class LogStash::Event
 
     # no need to reset @accessors here because merging will not disrupt any existing field paths
     # and if new ones are created they will be picked up.
-    LogStash::Util.hash_merge(@data, event.to_hash)
+    LogStash::Util.hash_merge(self.to_hash, event.to_hash)
   end # append
 end
 

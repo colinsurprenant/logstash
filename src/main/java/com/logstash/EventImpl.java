@@ -186,19 +186,22 @@ public class EventImpl implements Event, Cloneable, Serializable {
             }
         } catch (IllegalArgumentException e) {
             // TODO: add error logging
-
-            List<Object> tags = (List<Object>) this.data.get("tags");
-            if (tags == null) {
-                tags = new ArrayList<>();
-                this.data.put("tags", tags);
-            }
-
-            if (!tags.contains(TIMESTAMP_FAILURE_TAG)) {
-                tags.add(TIMESTAMP_FAILURE_TAG);
-            }
+            tag(TIMESTAMP_FAILURE_TAG);
             this.data.put(TIMESTAMP_FAILURE_FIELD, o.toString());
 
             return new Timestamp();
+        }
+    }
+
+    public void tag(String tag) {
+        List<Object> tags = (List<Object>) this.data.get("tags");
+        if (tags == null) {
+            tags = new ArrayList<>();
+            this.data.put("tags", tags);
+        }
+
+        if (!tags.contains(tag)) {
+            tags.add(tag);
         }
     }
 }

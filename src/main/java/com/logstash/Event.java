@@ -44,5 +44,7 @@ public interface Event extends Cloneable {
 
     String sprintf(String s) throws IOException;
 
+    void tag(String tag);
+
     Event clone() throws CloneNotSupportedException;
 }
