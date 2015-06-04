@@ -37,7 +37,7 @@ public class Accessors {
                 if (i < 0 || i >= ((List) target).size()) {
                     return null;
                 }
-                return ((List<Object>) target).get(i);
+                return ((List<Object>) target).remove(i);
             } else {
                 throw new ClassCastException("expecting List or Map");
             }
