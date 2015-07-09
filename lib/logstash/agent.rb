@@ -260,6 +260,7 @@ class LogStash::Agent < Clamp::Command
   end # def configure_logging
 
   # add the given paths for ungemified/bare plugins lookups
+  # @param paths [String, Array<String>] plugins path string or list of path strings to add
   def configure_plugin_paths(paths)
     Array(paths).each do |path|
       fail(I18n.t("logstash.agent.configuration.plugin_path_missing", :path => path)) unless File.directory?(path)
