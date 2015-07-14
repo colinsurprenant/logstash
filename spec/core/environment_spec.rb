@@ -42,12 +42,25 @@ describe LogStash::Environment do
   end
 
   context "plugin paths" do
-    let(:path) { "/some/path" }
+
+    let(:path)      { "/some/path" }
+    let(:load_path) { $LOAD_PATH }
+
+    before(:each) do
+      expect(load_path).to_not include(path)
+    end
+
+    after(:each) do
+      load_path.delete(path)
+    end
 
     it "should add the path to the $LOAD_PATH" do
-      expect($LOAD_PATH).to_not include(path)
-      expect{subject.add_plugin_path(path)}.to change{$LOAD_PATH.size}.by(1)
-      expect($LOAD_PATH).to include(path)
+      subject.add_plugin_path(path)
+      expect(load_path).to include(path)
+    end
+
+    it "should change the LOAD_PATH size by one" do
+      expect{subject.add_plugin_path(path)}.to change{load_path.size}.by(1)
     end
   end
 end
