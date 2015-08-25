@@ -1,6 +1,7 @@
 package com.logstash;
 
 import com.google.common.collect.Lists;
+import org.jruby.RubyHash;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -32,7 +33,10 @@ public class Util {
                         target.put(e.getKey(), targetValueList);
                     }
                 } else if (target.get(e.getKey()) instanceof List) {
-                    ((List) target.get(e.getKey())).add(e.getValue());
+                    List t = ((List) target.get(e.getKey()));
+                    if (!t.contains(e.getValue())) {
+                        t.add(e.getValue());
+                    }
                 } else if (!target.get(e.getKey()).equals(e.getValue())) {
                     Object targetValue = target.get(e.getKey());
                     targetValue = Lists.newArrayList(targetValue);

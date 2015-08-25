@@ -4,6 +4,7 @@ import com.logstash.ext.JrubyTimestampExtLibrary;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.joda.time.DateTime;
 import org.jruby.RubyHash;
+import org.jruby.RubySymbol;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -19,13 +20,13 @@ public class Event implements Cloneable, Serializable {
     private Accessors accessors;
     private Accessors metadata_accessors;
 
-    private static final String METADATA = "@metadata";
-    private static final String METADATA_BRACKETS = "[" + METADATA + "]";
-    private static final String TIMESTAMP = "@timestamp";
-    private static final String TIMESTAMP_FAILURE_TAG = "_timestampparsefailure";
-    private static final String TIMESTAMP_FAILURE_FIELD = "_@timestamp";
-    private static final String VERSION = "@version";
-    private static final String VERSION_ONE = "1";
+    public static final String METADATA = "@metadata";
+    public static final String METADATA_BRACKETS = "[" + METADATA + "]";
+    public static final String TIMESTAMP = "@timestamp";
+    public static final String TIMESTAMP_FAILURE_TAG = "_timestampparsefailure";
+    public static final String TIMESTAMP_FAILURE_FIELD = "_@timestamp";
+    public static final String VERSION = "@version";
+    public static final String VERSION_ONE = "1";
 
     private static final ObjectMapper mapper = new ObjectMapper();
 
@@ -48,17 +49,12 @@ public class Event implements Cloneable, Serializable {
         this.data = data;
         this.data.putIfAbsent(VERSION, VERSION_ONE);
 
-        HashMap<String, Object> metadata = new HashMap();
-        RubyHash rubyMetadataHash = (RubyHash) this.data.remove(METADATA);
-        if (rubyMetadataHash != null) {
-            Set<RubyHash.RubyHashEntry> entries = rubyMetadataHash.directEntrySet();
-            for (RubyHash.RubyHashEntry e : entries) {
-                metadata.put(e.getJavaifiedKey().toString(), e.getJavaifiedValue());
-            }
+        if (this.data.containsKey(METADATA)) {
+            this.metadata = (HashMap<String, Object>) this.data.remove(METADATA);
+        } else {
+            this.metadata = new HashMap<String, Object>();
         }
-
-        this.metadata = metadata;
-        this.metadata_accessors = new Accessors(metadata);
+        this.metadata_accessors = new Accessors(this.metadata);
 
         this.cancelled = false;
         this.timestamp = initTimestamp(data.get(TIMESTAMP));
@@ -68,6 +64,10 @@ public class Event implements Cloneable, Serializable {
 
     public Map<String, Object> getData() {
         return this.data;
+    }
+
+    public Map<String, Object> getMetadata() {
+        return this.metadata;
     }
 
     public void setData(Map<String, Object> data) {
@@ -116,7 +116,9 @@ public class Event implements Cloneable, Serializable {
     }
 
     public Object getField(String reference) {
-        if (reference.startsWith(METADATA_BRACKETS)) {
+        if (reference.equals(METADATA)) {
+            return this.metadata;
+        } else if (reference.startsWith(METADATA_BRACKETS)) {
             return this.metadata_accessors.get(reference.substring(METADATA_BRACKETS.length()));
         } else {
             return this.accessors.get(reference);
@@ -128,11 +130,12 @@ public class Event implements Cloneable, Serializable {
             // TODO(talevy): check type of timestamp
             this.accessors.set(reference, value);
         } else if (reference.equals(METADATA_BRACKETS) || reference.equals(METADATA)) {
-            this.metadata_accessors = new Accessors((RubyHash) value);
+            this.metadata = (HashMap<String, Object>) value;
+            this.metadata_accessors = new Accessors(this.metadata);
         } else if (reference.startsWith(METADATA_BRACKETS)) {
-                this.metadata_accessors.set(reference.substring(METADATA_BRACKETS.length()), value);
+            this.metadata_accessors.set(reference.substring(METADATA_BRACKETS.length()), value);
         } else {
-                this.accessors.set(reference, value);
+            this.accessors.set(reference, value);
         }
     }
 
@@ -213,22 +216,24 @@ public class Event implements Cloneable, Serializable {
                 return new Timestamp(((JrubyTimestampExtLibrary.RubyTimestamp) o).getTimestamp());
             } else if (o instanceof Timestamp) {
                 return new Timestamp((Timestamp) o);
-            } else if (o instanceof Long) {
-                return new Timestamp((Long) o);
             } else if (o instanceof DateTime) {
                 return new Timestamp((DateTime) o);
             } else if (o instanceof Date) {
                 return new Timestamp((Date) o);
+            } else if (o instanceof RubySymbol) {
+                return new Timestamp(((RubySymbol) o).asJavaString());
             } else {
                 // TODO: add logging
-                return new Timestamp();
+                //return Timestamp.now();
+                throw new IllegalArgumentException();
             }
         } catch (IllegalArgumentException e) {
             // TODO: add error logging
             tag(TIMESTAMP_FAILURE_TAG);
-            this.data.put(TIMESTAMP_FAILURE_FIELD, o.toString());
 
-            return new Timestamp();
+            this.data.put(TIMESTAMP_FAILURE_FIELD, o);
+
+            return Timestamp.now();
         }
     }
 

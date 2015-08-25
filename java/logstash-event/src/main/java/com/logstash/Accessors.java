@@ -95,6 +95,8 @@ public class Accessors {
                     int i = Integer.parseInt(key);
                     // TODO: what about index out of bound?
                     ((List<Object>)target).set(i, result);
+                } else if (target == null) {
+                    // do nothing
                 } else {
                     throw new ClassCastException("expecting List or Map");
                 }
@@ -129,7 +131,9 @@ public class Accessors {
             }
             Object result = ((List<Object>) target).get(i);
             return result;
-        } else {
+        } else if (target == null) {
+            return null;
+        } {
             throw new ClassCastException("expecting List or Map");
         }
     }

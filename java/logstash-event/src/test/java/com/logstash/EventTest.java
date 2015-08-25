@@ -113,12 +113,12 @@ public class EventTest {
 
     @Test
     public void testAppend() throws Exception {
-        Map  data1 = Maps.newHashMap(ImmutableMap.of("field1", Lists.newArrayList("hello")));
-        Map  data2 = Maps.newHashMap(ImmutableMap.of("field1", Lists.newArrayList("world", "hello")));
+        Map  data1 = Maps.newHashMap(ImmutableMap.of("field1", Lists.newArrayList("original1", "original2")));
+        Map  data2 = Maps.newHashMap(ImmutableMap.of("field1", "original1"));
         Event e = new Event(data1);
         Event e2 = new Event(data2);
         e.append(e2);
 
-        assertEquals(Lists.newArrayList("hello", "world"), e.getField("field1"));
+        assertEquals(Lists.newArrayList("original1", "original2"), e.getField("field1"));
     }
 }
