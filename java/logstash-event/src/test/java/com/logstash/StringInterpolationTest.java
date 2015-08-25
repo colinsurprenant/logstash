@@ -135,7 +135,7 @@ public class StringInterpolationTest {
         data.put("@timestamp", new DateTime(2015, 10, 1, 0, 0, 0));
 
 
-        Event event = new EventImpl(data);
+        Event event = new Event(data);
 
         return event;
     }

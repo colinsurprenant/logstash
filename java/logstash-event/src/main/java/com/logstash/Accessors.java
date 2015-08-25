@@ -48,7 +48,13 @@ public class Accessors {
     public boolean includes(String reference) {
         FieldReference field = PathCache.getInstance().cache(reference);
         Object target = findTarget(field);
-        return (target == null) ? false : (fetch(target, field.getKey()) != null);
+        if (target instanceof Map && foundInMap((Map<String, Object>) target, field.getKey())) {
+            return true;
+        } else if (target instanceof List && foundInList((List<Object>) target, Integer.parseInt(field.getKey()))) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private Object findTarget(FieldReference field) {
@@ -99,6 +105,17 @@ public class Accessors {
         this.lut.put(field.getReference(), target);
 
         return target;
+    }
+
+    private boolean foundInList(List<Object> target, int index) {
+        if (index < 0 || index >= target.size()) {
+            return false;
+        }
+        return target.get(index) != null;
+    }
+
+    private boolean foundInMap(Map<String, Object> target, String key) {
+        return target.containsKey(key);
     }
 
     private Object fetch(Object target, String key) {

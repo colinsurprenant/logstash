@@ -184,6 +184,7 @@ describe LogStash::Event do
           "type" => "new",
           "message" => "foo bar",
         )
+      
         subject.overwrite(new_event)
 
         expect(subject["message"]).to eq("foo bar")
@@ -197,7 +198,8 @@ describe LogStash::Event do
 
     context "#append" do
       it "should append strings to an array" do
-        subject.append(LogStash::Event.new("message" => "another thing"))
+        what = subject.append(LogStash::Event.new("message" => "another thing"))
+        p what['message']
         expect(subject["message"]).to eq([ "hello world", "another thing" ])
       end
 
@@ -240,6 +242,7 @@ describe LogStash::Event do
           expect(subject[ "field1" ]).to eq([ "original1", "append1" ])
         end
       end
+
       context "when event field is an array" do
         before { subject[ "field1" ] = [ "original1", "original2" ] }
 
@@ -258,203 +261,203 @@ describe LogStash::Event do
       end
     end
 
-    it "timestamp parsing speed", :performance => true do
-      warmup = 10000
-      count = 1000000
+    # it "timestamp parsing speed", :performance => true do
+    #   warmup = 10000
+    #   count = 1000000
 
-      data = { "@timestamp" => "2013-12-21T07:25:06.605Z" }
-      event = LogStash::Event.new(data)
-      expect(event["@timestamp"]).to be_a(LogStash::Timestamp)
+    #   data = { "@timestamp" => "2013-12-21T07:25:06.605Z" }
+    #   event = LogStash::Event.new(data)
+    #   expect(event["@timestamp"]).to be_a(LogStash::Timestamp)
 
-      duration = 0
-      [warmup, count].each do |i|
-        start = Time.now
-        i.times do
-          data = { "@timestamp" => "2013-12-21T07:25:06.605Z" }
-          LogStash::Event.new(data.clone)
-        end
-        duration = Time.now - start
-      end
-      puts "event @timestamp parse rate: #{"%02.0f/sec" % (count / duration)}, elapsed: #{duration}s"
-    end
+    #   duration = 0
+    #   [warmup, count].each do |i|
+    #     start = Time.now
+    #     i.times do
+    #       data = { "@timestamp" => "2013-12-21T07:25:06.605Z" }
+    #       LogStash::Event.new(data.clone)
+    #     end
+    #     duration = Time.now - start
+    #   end
+    #   puts "event @timestamp parse rate: #{"%02.0f/sec" % (count / duration)}, elapsed: #{duration}s"
+    # end
 
-    context "acceptable @timestamp formats" do
-      subject { LogStash::Event.new }
+    # context "acceptable @timestamp formats" do
+    #   subject { LogStash::Event.new }
 
-      formats = [
-        "YYYY-MM-dd'T'HH:mm:ss.SSSZ",
-        "YYYY-MM-dd'T'HH:mm:ss.SSSSSSZ",
-        "YYYY-MM-dd'T'HH:mm:ss.SSS",
-        "YYYY-MM-dd'T'HH:mm:ss",
-        "YYYY-MM-dd'T'HH:mm:ssZ",
-      ]
-      formats.each do |format|
-        it "includes #{format}" do
-          time = subject.sprintf("%{+#{format}}")
-          begin
-            LogStash::Event.new("@timestamp" => time)
-          rescue => e
-            raise StandardError, "Time '#{time}' was rejected. #{e.class}: #{e.to_s}"
-          end
-        end
-      end
+    #   formats = [
+    #     "YYYY-MM-dd'T'HH:mm:ss.SSSZ",
+    #     "YYYY-MM-dd'T'HH:mm:ss.SSSSSSZ",
+    #     "YYYY-MM-dd'T'HH:mm:ss.SSS",
+    #     "YYYY-MM-dd'T'HH:mm:ss",
+    #     "YYYY-MM-dd'T'HH:mm:ssZ",
+    #   ]
+    #   formats.each do |format|
+    #     it "includes #{format}" do
+    #       time = subject.sprintf("%{+#{format}}")
+    #       begin
+    #         LogStash::Event.new("@timestamp" => time)
+    #       rescue => e
+    #         raise StandardError, "Time '#{time}' was rejected. #{e.class}: #{e.to_s}"
+    #       end
+    #     end
+    #   end
 
-      context "from LOGSTASH-1738" do
-        it "does not error" do
-          LogStash::Event.new("@timestamp" => "2013-12-29T23:12:52.371240+02:00")
-        end
-      end
+    #   context "from LOGSTASH-1738" do
+    #     it "does not error" do
+    #       LogStash::Event.new("@timestamp" => "2013-12-29T23:12:52.371240+02:00")
+    #     end
+    #   end
 
-      context "from LOGSTASH-1732" do
-        it "does not error" do
-          LogStash::Event.new("@timestamp" => "2013-12-27T11:07:25+00:00")
-        end
-      end
-    end
+    #   context "from LOGSTASH-1732" do
+    #     it "does not error" do
+    #       LogStash::Event.new("@timestamp" => "2013-12-27T11:07:25+00:00")
+    #     end
+    #   end
+    # end
 
-    context "timestamp initialization" do
-      let(:logger) { double("logger") }
+    # context "timestamp initialization" do
+    #   let(:logger) { double("logger") }
 
-      it "should coerce timestamp" do
-        t = Time.iso8601("2014-06-12T00:12:17.114Z")
-        # expect(LogStash::Timestamp).to receive(:coerce).exactly(3).times.and_call_original
-        expect(LogStash::Event.new("@timestamp" => t).timestamp.to_i).to eq(t.to_i)
-        expect(LogStash::Event.new("@timestamp" => LogStash::Timestamp.new(t)).timestamp.to_i).to eq(t.to_i)
-        expect(LogStash::Event.new("@timestamp" => "2014-06-12T00:12:17.114Z").timestamp.to_i).to eq(t.to_i)
-      end
+    #   it "should coerce timestamp" do
+    #     t = Time.iso8601("2014-06-12T00:12:17.114Z")
+    #     # expect(LogStash::Timestamp).to receive(:coerce).exactly(3).times.and_call_original
+    #     expect(LogStash::Event.new("@timestamp" => t).timestamp.to_i).to eq(t.to_i)
+    #     expect(LogStash::Event.new("@timestamp" => LogStash::Timestamp.new(t)).timestamp.to_i).to eq(t.to_i)
+    #     expect(LogStash::Event.new("@timestamp" => "2014-06-12T00:12:17.114Z").timestamp.to_i).to eq(t.to_i)
+    #   end
 
-      it "should assign current time when no timestamp" do
-        # ts = LogStash::Timestamp.now
-        # expect(LogStash::Timestamp).to receive(:now).and_return(ts)
-        expect(LogStash::Event.new({}).timestamp.to_i).to be_within(1).of Time.now.to_i
-      end
+    #   it "should assign current time when no timestamp" do
+    #     # ts = LogStash::Timestamp.now
+    #     # expect(LogStash::Timestamp).to receive(:now).and_return(ts)
+    #     expect(LogStash::Event.new({}).timestamp.to_i).to be_within(1).of Time.now.to_i
+    #   end
 
-      it "should tag and warn for invalid value" do
-        ts = LogStash::Timestamp.now
-        expect(LogStash::Timestamp).to receive(:now).twice.and_return(ts)
-        expect(LogStash::Event::LOGGER).to receive(:warn).twice
+    #   it "should tag and warn for invalid value" do
+    #     ts = LogStash::Timestamp.now
+    #     expect(LogStash::Timestamp).to receive(:now).twice.and_return(ts)
+    #     expect(LogStash::Event::LOGGER).to receive(:warn).twice
 
-        event = LogStash::Event.new("@timestamp" => :foo)
-        expect(event.timestamp.to_i).to eq(ts.to_i)
-        expect(event["tags"]).to eq([LogStash::Event::TIMESTAMP_FAILURE_TAG])
-        expect(event[LogStash::Event::TIMESTAMP_FAILURE_FIELD]).to eq(:foo)
+    #     event = LogStash::Event.new("@timestamp" => :foo)
+    #     expect(event.timestamp.to_i).to eq(ts.to_i)
+    #     expect(event["tags"]).to eq([LogStash::Event::TIMESTAMP_FAILURE_TAG])
+    #     expect(event[LogStash::Event::TIMESTAMP_FAILURE_FIELD]).to eq(:foo)
 
-        event = LogStash::Event.new("@timestamp" => 666)
-        expect(event.timestamp.to_i).to eq(ts.to_i)
-        expect(event["tags"]).to eq([LogStash::Event::TIMESTAMP_FAILURE_TAG])
-        expect(event[LogStash::Event::TIMESTAMP_FAILURE_FIELD]).to eq(666)
-      end
+    #     event = LogStash::Event.new("@timestamp" => 666)
+    #     expect(event.timestamp.to_i).to eq(ts.to_i)
+    #     expect(event["tags"]).to eq([LogStash::Event::TIMESTAMP_FAILURE_TAG])
+    #     expect(event[LogStash::Event::TIMESTAMP_FAILURE_FIELD]).to eq(666)
+    #   end
 
-      it "should tag and warn for invalid string format" do
-        ts = LogStash::Timestamp.now
-        expect(LogStash::Timestamp).to receive(:now).and_return(ts)
-        expect(LogStash::Event::LOGGER).to receive(:warn)
+    #   it "should tag and warn for invalid string format" do
+    #     ts = LogStash::Timestamp.now
+    #     expect(LogStash::Timestamp).to receive(:now).and_return(ts)
+    #     expect(LogStash::Event::LOGGER).to receive(:warn)
 
-        event = LogStash::Event.new("@timestamp" => "foo")
-        expect(event.timestamp.to_i).to eq(ts.to_i)
-        expect(event["tags"]).to eq([LogStash::Event::TIMESTAMP_FAILURE_TAG])
-        expect(event[LogStash::Event::TIMESTAMP_FAILURE_FIELD]).to eq("foo")
-      end
-    end
+    #     event = LogStash::Event.new("@timestamp" => "foo")
+    #     expect(event.timestamp.to_i).to eq(ts.to_i)
+    #     expect(event["tags"]).to eq([LogStash::Event::TIMESTAMP_FAILURE_TAG])
+    #     expect(event[LogStash::Event::TIMESTAMP_FAILURE_FIELD]).to eq("foo")
+    #   end
+    # end
 
-    context "to_json" do
-      it "should support to_json" do
-        new_event = LogStash::Event.new(
-          "@timestamp" => Time.iso8601("2014-09-23T19:26:15.832Z"),
-          "message" => "foo bar",
-        )
-        json = new_event.to_json
+    # context "to_json" do
+    #   it "should support to_json" do
+    #     new_event = LogStash::Event.new(
+    #       "@timestamp" => Time.iso8601("2014-09-23T19:26:15.832Z"),
+    #       "message" => "foo bar",
+    #     )
+    #     json = new_event.to_json
 
-        expect(json).to eq( "{\"@timestamp\":\"2014-09-23T19:26:15.832Z\",\"message\":\"foo bar\",\"@version\":\"1\"}")
-      end
+    #     expect(json).to eq( "{\"@timestamp\":\"2014-09-23T19:26:15.832Z\",\"message\":\"foo bar\",\"@version\":\"1\"}")
+    #   end
 
-      it "should support to_json and ignore arguments" do
-        new_event = LogStash::Event.new(
-          "@timestamp" => Time.iso8601("2014-09-23T19:26:15.832Z"),
-          "message" => "foo bar",
-        )
-        json = new_event.to_json(:foo => 1, :bar => "baz")
+    #   it "should support to_json and ignore arguments" do
+    #     new_event = LogStash::Event.new(
+    #       "@timestamp" => Time.iso8601("2014-09-23T19:26:15.832Z"),
+    #       "message" => "foo bar",
+    #     )
+    #     json = new_event.to_json(:foo => 1, :bar => "baz")
 
-        expect(json).to eq( "{\"@timestamp\":\"2014-09-23T19:26:15.832Z\",\"message\":\"foo bar\",\"@version\":\"1\"}")
-      end
-    end
+    #     expect(json).to eq( "{\"@timestamp\":\"2014-09-23T19:26:15.832Z\",\"message\":\"foo bar\",\"@version\":\"1\"}")
+    #   end
+    # end
 
-    context "metadata" do
-      context "with existing metadata" do
-        subject { LogStash::Event.new("hello" => "world", "@metadata" => { "fancy" => "pants" }) }
+    # context "metadata" do
+    #   context "with existing metadata" do
+    #     subject { LogStash::Event.new("hello" => "world", "@metadata" => { "fancy" => "pants" }) }
 
-        it "should not include metadata in to_hash" do
-          expect(subject.to_hash.keys).not_to include("@metadata")
+    #     it "should not include metadata in to_hash" do
+    #       expect(subject.to_hash.keys).not_to include("@metadata")
 
-          # 'hello', '@timestamp', and '@version'
-          expect(subject.to_hash.keys.count).to eq(3)
-        end
+    #       # 'hello', '@timestamp', and '@version'
+    #       expect(subject.to_hash.keys.count).to eq(3)
+    #     end
 
-        it "should still allow normal field access" do
-          expect(subject["hello"]).to eq("world")
-        end
-      end
+    #     it "should still allow normal field access" do
+    #       expect(subject["hello"]).to eq("world")
+    #     end
+    #   end
 
-      context "with set metadata" do
-        let(:fieldref) { "[@metadata][foo][bar]" }
-        let(:value) { "bar" }
-        subject { LogStash::Event.new("normal" => "normal") }
-        before do
-          # Verify the test is configured correctly.
-          expect(fieldref).to start_with("[@metadata]")
+    #   context "with set metadata" do
+    #     let(:fieldref) { "[@metadata][foo][bar]" }
+    #     let(:value) { "bar" }
+    #     subject { LogStash::Event.new("normal" => "normal") }
+    #     before do
+    #       # Verify the test is configured correctly.
+    #       expect(fieldref).to start_with("[@metadata]")
 
-          # Set it.
-          subject[fieldref] = value
-        end
+    #       # Set it.
+    #       subject[fieldref] = value
+    #     end
 
-        it "should still allow normal field access" do
-          expect(subject["normal"]).to eq("normal")
-        end
+    #     it "should still allow normal field access" do
+    #       expect(subject["normal"]).to eq("normal")
+    #     end
 
-        it "should allow getting" do
-          expect(subject[fieldref]).to eq(value)
-        end
+    #     it "should allow getting" do
+    #       expect(subject[fieldref]).to eq(value)
+    #     end
 
-        it "should be hidden from .to_json" do
-          require "json"
-          obj = JSON.parse(subject.to_json)
-          expect(obj).not_to include("@metadata")
-        end
+    #     it "should be hidden from .to_json" do
+    #       require "json"
+    #       obj = JSON.parse(subject.to_json)
+    #       expect(obj).not_to include("@metadata")
+    #     end
 
-        it "should be hidden from .to_hash" do
-          expect(subject.to_hash).not_to include("@metadata")
-        end
+    #     it "should be hidden from .to_hash" do
+    #       expect(subject.to_hash).not_to include("@metadata")
+    #     end
 
-        it "should be accessible through #to_hash_with_metadata" do
-          obj = subject.to_hash_with_metadata
-          expect(obj).to include("@metadata")
-          expect(obj["@metadata"]["foo"]["bar"]).to eq(value)
-        end
-      end
+    #     it "should be accessible through #to_hash_with_metadata" do
+    #       obj = subject.to_hash_with_metadata
+    #       expect(obj).to include("@metadata")
+    #       expect(obj["@metadata"]["foo"]["bar"]).to eq(value)
+    #     end
+    #   end
 
-      context "with no metadata" do
-        subject { LogStash::Event.new("foo" => "bar") }
-        it "should have no metadata" do
-          expect(subject["@metadata"]).to be_empty
-        end
-        it "should still allow normal field access" do
-          expect(subject["foo"]).to eq("bar")
-        end
+    #   context "with no metadata" do
+    #     subject { LogStash::Event.new("foo" => "bar") }
+    #     it "should have no metadata" do
+    #       expect(subject["@metadata"]).to be_empty
+    #     end
+    #     it "should still allow normal field access" do
+    #       expect(subject["foo"]).to eq("bar")
+    #     end
 
-        it "should not include the @metadata key" do
-          expect(subject.to_hash_with_metadata).not_to include("@metadata")
-        end
-      end
-    end
+    #     it "should not include the @metadata key" do
+    #       expect(subject.to_hash_with_metadata).not_to include("@metadata")
+    #     end
+    #   end
+    # end
 
-    context "signal events" do
-      it "should define the shutdown event" do
-        # the SHUTDOWN and FLUSH constants are part of the plugin API contract
-        # if they are changed, all plugins must be updated
-        expect(LogStash::SHUTDOWN).to be_a(LogStash::ShutdownEvent)
-        expect(LogStash::FLUSH).to be_a(LogStash::FlushEvent)
-      end
-    end
+    # context "signal events" do
+    #   it "should define the shutdown event" do
+    #     # the SHUTDOWN and FLUSH constants are part of the plugin API contract
+    #     # if they are changed, all plugins must be updated
+    #     expect(LogStash::SHUTDOWN).to be_a(LogStash::ShutdownEvent)
+    #     expect(LogStash::FLUSH).to be_a(LogStash::FlushEvent)
+    #   end
+    # end
   end
 
   let(:event_hash) do
@@ -489,11 +492,11 @@ describe LogStash::Event do
     end
   end
 
-  describe "using hash input from deserialized json" do
-    # this is to test the case when JrJackson deserialises Json and produces
-    # native Java Collections objects for efficiency
-    it_behaves_like "all event tests" do
-      subject{LogStash::Event.new(LogStash::Json.load(LogStash::Json.dump(event_hash)))}
-    end
-  end
+  # describe "using hash input from deserialized json" do
+  #   # this is to test the case when JrJackson deserialises Json and produces
+  #   # native Java Collections objects for efficiency
+  #   it_behaves_like "all event tests" do
+  #     subject{LogStash::Event.new(LogStash::Json.load(LogStash::Json.dump(event_hash)))}
+  #   end
+  # end
 end
