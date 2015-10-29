@@ -1,26 +1,27 @@
-$LOAD_PATH << File.expand_path("../../../lib", __FILE__)
+$LOAD_PATH << File.expand_path("../../lib", __FILE__)
 
-require "jruby_event/jruby_event"
+require "logstash-core-event-java/logstash-core-event-java"
 require "logstash/util"
 require "logstash/event"
+require "json"
 
 TIMESTAMP = "@timestamp"
 
 describe LogStash::Event do
   context "to_json" do
-    it "should serialize snmple values" do
+    it "should serialize simple values" do
       e = LogStash::Event.new({"foo" => "bar", "bar" => 1, "baz" => 1.0, TIMESTAMP => "2015-05-28T23:02:05.350Z"})
-      expect(e.to_json).to eq("{\"foo\":\"bar\",\"bar\":1,\"baz\":1.0,\"@timestamp\":\"2015-05-28T23:02:05.350Z\",\"@version\":\"1\"}")
+      expect(JSON.parse(e.to_json)).to eq(JSON.parse("{\"foo\":\"bar\",\"bar\":1,\"baz\":1.0,\"@timestamp\":\"2015-05-28T23:02:05.350Z\",\"@version\":\"1\"}"))
     end
 
     it "should serialize deep hash values" do
       e = LogStash::Event.new({"foo" => {"bar" => 1, "baz" => 1.0, "biz" => "boz"}, TIMESTAMP => "2015-05-28T23:02:05.350Z"})
-      expect(e.to_json).to eq("{\"foo\":{\"bar\":1,\"baz\":1.0,\"biz\":\"boz\"},\"@timestamp\":\"2015-05-28T23:02:05.350Z\",\"@version\":\"1\"}")
+      expect(JSON.parse(e.to_json)).to eq(JSON.parse("{\"foo\":{\"bar\":1,\"baz\":1.0,\"biz\":\"boz\"},\"@timestamp\":\"2015-05-28T23:02:05.350Z\",\"@version\":\"1\"}"))
     end
 
     it "should serialize deep array values" do
       e = LogStash::Event.new({"foo" => ["bar", 1, 1.0], TIMESTAMP => "2015-05-28T23:02:05.350Z"})
-      expect(e.to_json).to eq("{\"foo\":[\"bar\",1,1.0],\"@timestamp\":\"2015-05-28T23:02:05.350Z\",\"@version\":\"1\"}")
+      expect(JSON.parse(e.to_json)).to eq(JSON.parse("{\"foo\":[\"bar\",1,1.0],\"@timestamp\":\"2015-05-28T23:02:05.350Z\",\"@version\":\"1\"}"))
     end
 
     it "should serialize deep hash from field reference assignments" do
@@ -29,7 +30,7 @@ describe LogStash::Event do
       e["bar"] = 1
       e["baz"] = 1.0
       e["[fancy][pants][socks]"] = "shoes"
-      expect(e.to_json).to eq("{\"@timestamp\":\"2015-05-28T23:02:05.350Z\",\"@version\":\"1\",\"foo\":\"bar\",\"bar\":1,\"baz\":1.0,\"fancy\":{\"pants\":{\"socks\":\"shoes\"}}}")
+      expect(JSON.parse(e.to_json)).to eq(JSON.parse("{\"@timestamp\":\"2015-05-28T23:02:05.350Z\",\"@version\":\"1\",\"foo\":\"bar\",\"bar\":1,\"baz\":1.0,\"fancy\":{\"pants\":{\"socks\":\"shoes\"}}}"))
     end
   end
 
@@ -135,4 +136,3 @@ describe LogStash::Event do
     end
   end
 end
-``

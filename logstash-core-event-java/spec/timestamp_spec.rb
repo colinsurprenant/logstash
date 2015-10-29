@@ -1,6 +1,6 @@
-$LOAD_PATH << File.expand_path("../../../lib", __FILE__)
+$LOAD_PATH << File.expand_path("../../lib", __FILE__)
 
-require "jruby_event/jruby_event"
+require "logstash-core-event-java/logstash-core-event-java"
 
 describe LogStash::Timestamp do
   context "constructors" do
@@ -22,4 +22,3 @@ describe LogStash::Timestamp do
   end
 
 end
-``

@@ -15,7 +15,7 @@ namespace "compile" do
   desc "Build everything"
   task "all" => "grammar"
 
-  task "jruby-event" do
-    sh './java/gradlew logstash-event:shadowJar -p ./java'
-  end
+  # task "jruby-event" do
+  #   sh './java/gradlew logstash-event:shadowJar -p ./java'
+  # end
 end

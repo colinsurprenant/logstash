@@ -184,7 +184,6 @@ describe LogStash::Event do
           "type" => "new",
           "message" => "foo bar",
         )
-      
         subject.overwrite(new_event)
 
         expect(subject["message"]).to eq("foo bar")
@@ -198,7 +197,7 @@ describe LogStash::Event do
 
     context "#append" do
       it "should append strings to an array" do
-        what = subject.append(LogStash::Event.new("message" => "another thing"))
+        subject.append(LogStash::Event.new("message" => "another thing"))
         expect(subject["message"]).to eq([ "hello world", "another thing" ])
       end
 
@@ -241,7 +240,6 @@ describe LogStash::Event do
           expect(subject[ "field1" ]).to eq([ "original1", "append1" ])
         end
       end
-
       context "when event field is an array" do
         before { subject[ "field1" ] = [ "original1", "original2" ] }
 
@@ -319,23 +317,22 @@ describe LogStash::Event do
 
       it "should coerce timestamp" do
         t = Time.iso8601("2014-06-12T00:12:17.114Z")
-        # expect(LogStash::Timestamp).to receive(:coerce).exactly(3).times.and_call_original
+        expect(LogStash::Timestamp).to receive(:coerce).exactly(3).times.and_call_original
         expect(LogStash::Event.new("@timestamp" => t).timestamp.to_i).to eq(t.to_i)
         expect(LogStash::Event.new("@timestamp" => LogStash::Timestamp.new(t)).timestamp.to_i).to eq(t.to_i)
         expect(LogStash::Event.new("@timestamp" => "2014-06-12T00:12:17.114Z").timestamp.to_i).to eq(t.to_i)
       end
 
       it "should assign current time when no timestamp" do
-        # ts = LogStash::Timestamp.now
-        # expect(LogStash::Timestamp).to receive(:now).and_return(ts)
-        expect(LogStash::Event.new({}).timestamp.to_i).to be_within(1).of Time.now.to_i
+        ts = LogStash::Timestamp.now
+        expect(LogStash::Timestamp).to receive(:now).and_return(ts)
+        expect(LogStash::Event.new({}).timestamp.to_i).to eq(ts.to_i)
       end
 
       it "should tag and warn for invalid value" do
         ts = LogStash::Timestamp.now
-        # TODO(talevy): make pass. bridge between error in Java to Ruby
-        # expect(LogStash::Timestamp).to receive(:now).twice.and_return(ts)
-        # expect(LogStash::Event::LOGGER).to receive(:warn).twice
+        expect(LogStash::Timestamp).to receive(:now).twice.and_return(ts)
+        expect(LogStash::Event::LOGGER).to receive(:warn).twice
 
         event = LogStash::Event.new("@timestamp" => :foo)
         expect(event.timestamp.to_i).to eq(ts.to_i)
@@ -350,9 +347,8 @@ describe LogStash::Event do
 
       it "should tag and warn for invalid string format" do
         ts = LogStash::Timestamp.now
-        # TODO(talevy): make pass. bridge between error in Java to Ruby
-        # expect(LogStash::Timestamp).to receive(:now).and_return(ts)
-        # expect(LogStash::Event::LOGGER).to receive(:warn)
+        expect(LogStash::Timestamp).to receive(:now).and_return(ts)
+        expect(LogStash::Event::LOGGER).to receive(:warn)
 
         event = LogStash::Event.new("@timestamp" => "foo")
         expect(event.timestamp.to_i).to eq(ts.to_i)
@@ -369,7 +365,7 @@ describe LogStash::Event do
         )
         json = new_event.to_json
 
-        expect(json).to eq( "{\"@timestamp\":\"2014-09-23T19:26:15.832Z\",\"@version\":\"1\",\"message\":\"foo bar\"}")
+        expect(json).to eq( "{\"@timestamp\":\"2014-09-23T19:26:15.832Z\",\"message\":\"foo bar\",\"@version\":\"1\"}")
       end
 
       it "should support to_json and ignore arguments" do
@@ -379,7 +375,7 @@ describe LogStash::Event do
         )
         json = new_event.to_json(:foo => 1, :bar => "baz")
 
-        expect(json).to eq( "{\"@timestamp\":\"2014-09-23T19:26:15.832Z\",\"@version\":\"1\",\"message\":\"foo bar\"}")
+        expect(json).to eq( "{\"@timestamp\":\"2014-09-23T19:26:15.832Z\",\"message\":\"foo bar\",\"@version\":\"1\"}")
       end
     end
 

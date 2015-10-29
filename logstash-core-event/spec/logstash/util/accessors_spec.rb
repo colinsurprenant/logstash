@@ -2,7 +2,7 @@
 require "spec_helper"
 require "logstash/util/accessors"
 
-describe LogStash::Util::Accessors, :if => true dogit ad
+describe LogStash::Util::Accessors, :if => true do
 
   context "using simple field" do
 

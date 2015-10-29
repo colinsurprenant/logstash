@@ -10,7 +10,8 @@ buildscript {
   }
 }
 
-allprojects {
+//allprojects {
+
   repositories {
     mavenLocal()
     mavenCentral()
@@ -22,9 +23,10 @@ allprojects {
     }
   }
 
-}
+//}
 
-subprojects { project ->
+//subprojects { project ->
+
   apply plugin: 'java'
   apply plugin: 'idea'
   apply plugin: 'com.github.johnrengelman.shadow'
@@ -91,7 +93,8 @@ subprojects { project ->
     testCompile 'org.testng:testng:6.9.6'
     testCompile 'org.mockito:mockito-core:1.10.19'
   }
-}
+
+//}
 
 // See http://www.gradle.org/docs/current/userguide/gradle_wrapper.html
 task wrapper(type: Wrapper) {
