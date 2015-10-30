@@ -1,6 +1,7 @@
 # encoding: utf-8
 
 require "logstash/namespace"
+require "logstash/json"
 
 # transcient pipeline events for normal in-flow signaling as opposed to
 # flow altering exceptions. for now having base classes is adequate and
