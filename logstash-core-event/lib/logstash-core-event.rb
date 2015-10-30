@@ -1,3 +1,1 @@
-# encoding: utf-8
-module LogStash
-end
+require "logstash-core-event/logstash-core-event"
