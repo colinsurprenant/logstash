@@ -9,13 +9,13 @@ end
 namespace "compile" do
   desc "Compile the config grammar"
 
-  # TODO: (colin) temporary fix for logstash-core
   task "grammar" => "logstash-core/lib/logstash/config/grammar.rb"
 
   desc "Build everything"
-  task "all" => "grammar"
+  task "all" => ["grammar", "logstash-core-event-java"]
 
-  # task "jruby-event" do
-  #   sh './java/gradlew logstash-event:shadowJar -p ./java'
-  # end
+  task "logstash-core-event-java" do
+    puts("Building logstash-core-event-java using gradle")
+    system("logstash-core-event-java/gradlew", "jar", "-p", "./logstash-core-event-java")
+  end
 end
