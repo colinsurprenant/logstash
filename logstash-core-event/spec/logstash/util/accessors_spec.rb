@@ -1,8 +1,17 @@
 # encoding: utf-8
 require "spec_helper"
-require "logstash/util/accessors"
 
-describe LogStash::Util::Accessors, :if => true do
+# this is to skip specs when running agains an alternate logstash-core-event implementation
+# that does not define the Accessors class. For example, in logstash-core-event-java
+# the Accessors class does not exists in the Ruby namespace.
+class_exists = begin
+  require "logstash/util/accessors"
+  true
+rescue LoadError
+  false
+end
+
+describe "LogStash::Util::Accessors", :if => class_exists do
 
   context "using simple field" do
 
