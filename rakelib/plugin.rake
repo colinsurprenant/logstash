@@ -61,8 +61,7 @@ namespace "plugin" do
     name = args[:name]
     path = args[:path]
 
-    puts("#{File.join(path, name)}*.gem")
-    Dir["#{File.join(path, name)}*.gem"].each do |gem|
+    Dir[File.join(path, "#{name}*.gem")].each do |gem|
       puts("[plugin:clean-local-core-gem] Cleaning #{gem}")
       rm(gem)
     end
@@ -78,21 +77,20 @@ namespace "plugin" do
 
     puts("[plugin:build-local-core-gem] Building #{File.join(path, name)}.gemspec")
 
-    system("cd #{path}; gem build #{File.join(path, name)}.gemspec")
+    system("cd #{path}; gem build #{name}.gemspec")
 
     task.reenable # Allow this task to be run again
   end
-
-  # task "require",  :name, :requirement do |task, args|
-  #   name, requirement = args[:name], args[:requirement]
 
   task "install-local-core-gem", [:name, :path] do |task, args|
     name = args[:name]
     path = args[:path]
 
-    Rake::Task["plugin:build-core-gem"].invoke(name, path)
+    puts("toto #{name}, #{path}")
 
-    gems = Dir[File.join(path, "#{name}.gem")]
+    Rake::Task["plugin:build-local-core-gem"].invoke(name, path)
+
+    gems = Dir[File.join(path, "#{name}*.gem")]
     abort("ERROR: #{name} gem not found in #{path}") if gems.size != 1
     puts("[plugin:install-local-core-gem] Installing #{gems.first}")
     install_plugins("--no-verify", gems.first)
