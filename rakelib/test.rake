@@ -21,12 +21,12 @@ namespace "test" do
 
   desc "run core specs"
   task "core" => ["setup"] do
-    exit(RSpec::Core::Runner.run([Rake::FileList["spec/**/*_spec.rb"]]))
+    exit(RSpec::Core::Runner.run([Rake::FileList["spec/**/*_spec.rb", "logstash-core/spec/**/*_spec.rb", "logstash-core-event/spec/**/*_spec.rb"]]))
   end
 
   desc "run core specs in fail-fast mode"
   task "core-fail-fast" => ["setup"] do
-    exit(RSpec::Core::Runner.run(["--fail-fast", Rake::FileList["spec/**/*_spec.rb"]]))
+    exit(RSpec::Core::Runner.run(["--fail-fast", Rake::FileList["spec/**/*_spec.rb", "logstash-core/spec/**/*_spec.rb", "logstash-core-event/spec/**/*_spec.rb"]]))
   end
 
   desc "run core specs on a single file"
