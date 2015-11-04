@@ -188,8 +188,10 @@ public class Event implements Cloneable, Serializable {
     public Event clone()
             throws CloneNotSupportedException
     {
-        Event clone = (Event)super.clone();
-        clone.setAccessors(new Accessors(clone.getData()));
+//        Event clone = (Event)super.clone();
+//        clone.setAccessors(new Accessors(clone.getData()));
+
+        Event clone = new Event(Cloner.deep(getData()));
         return clone;
     }
 
