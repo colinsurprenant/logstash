@@ -134,6 +134,59 @@ public class JrubyTimestampExtLibrary implements Library {
             return RubyString.newString(context.runtime,  "\"" + this.timestamp.toIso8601() + "\"");
         }
 
+        public static Timestamp newTimetsamp(IRubyObject time)
+        {
+            if (time.isNil()) {
+                return new Timestamp();
+            } else if (time instanceof RubyTime) {
+                return new Timestamp(((RubyTime)time).getDateTime());
+            } else if (time instanceof RubyString) {
+                return new Timestamp(((RubyString) time).toString());
+            } else if (time instanceof RubyTimestamp) {
+                return new Timestamp(((RubyTimestamp) time).timestamp);
+            } else {
+               return null;
+            }
+        }
+
+
+        @JRubyMethod(name = "coerce", required = 1, meta = true)
+        public static IRubyObject ruby_coerce(ThreadContext context, IRubyObject recv, IRubyObject time)
+        {
+            try {
+                Timestamp ts = newTimetsamp(time);
+                return (ts == null) ? context.runtime.getNil() : RubyTimestamp.newRubyTimestamp(context.runtime, ts);
+             } catch (IllegalArgumentException e) {
+                throw new RaiseException(
+                        context.runtime,
+                        context.runtime.getModule("LogStash").getClass("TimestampParserError"),
+                        "invalid timestamp format " + e.getMessage(),
+                        true
+                );
+
+            }
+         }
+
+        @JRubyMethod(name = "parse_iso8601", required = 1, meta = true)
+        public static IRubyObject ruby_parse_iso8601(ThreadContext context, IRubyObject recv, IRubyObject time)
+        {
+            if (time instanceof RubyString) {
+                try {
+                    return RubyTimestamp.newRubyTimestamp(context.runtime, newTimetsamp(time));
+                } catch (IllegalArgumentException e) {
+                    throw new RaiseException(
+                            context.runtime,
+                            context.runtime.getModule("LogStash").getClass("TimestampParserError"),
+                            "invalid timestamp format " + e.getMessage(),
+                            true
+                    );
+
+                }
+            } else {
+                throw context.runtime.newTypeError("wrong argument type " + time.getMetaClass() + " (expected String)");
+            }
+        }
+
         @JRubyMethod(name = "at", required = 1, optional = 1, meta = true)
         public static IRubyObject ruby_at(ThreadContext context, IRubyObject recv, IRubyObject[] args)
         {
