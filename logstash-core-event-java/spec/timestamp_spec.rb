@@ -19,6 +19,10 @@ describe LogStash::Timestamp do
       expect(t.time.to_i).to eq(now.to_i)
     end
 
+    it "should raise exception on invalid format" do
+      expect{LogStash::Timestamp.new("foobar")}.to raise_error
+    end
+
   end
 
 end

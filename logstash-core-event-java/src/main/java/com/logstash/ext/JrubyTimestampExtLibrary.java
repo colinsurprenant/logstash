@@ -5,6 +5,7 @@ import org.codehaus.jackson.map.annotate.JsonSerialize;
 import org.jruby.*;
 import org.jruby.anno.JRubyClass;
 import org.jruby.anno.JRubyMethod;
+import org.jruby.exceptions.RaiseException;
 import org.jruby.javasupport.JavaUtil;
 import org.jruby.runtime.Arity;
 import org.jruby.runtime.ObjectAllocator;
@@ -79,6 +80,18 @@ public class JrubyTimestampExtLibrary implements Library {
                 this.timestamp = new Timestamp();
             } else if (time instanceof RubyTime) {
                 this.timestamp = new Timestamp(((RubyTime)time).getDateTime());
+            } else if (time instanceof RubyString) {
+                try {
+                    this.timestamp = new Timestamp(((RubyString) time).toString());
+                } catch (IllegalArgumentException e) {
+                    throw new RaiseException(
+                            getRuntime(),
+                            getRuntime().getModule("LogStash").getClass("TimestampParserError"),
+                            "invalid timestamp string format " + time,
+                            true
+                    );
+
+                }
             } else {
                 throw context.runtime.newTypeError("wrong argument type " + time.getMetaClass() + " (expected Time)");
             }
