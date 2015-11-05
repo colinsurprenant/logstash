@@ -1,6 +1,4 @@
-$LOAD_PATH << File.expand_path("../../lib", __FILE__)
-
-require "logstash-core-event-java/logstash-core-event-java"
+require "logstash/timestamp"
 
 describe LogStash::Timestamp do
   context "constructors" do

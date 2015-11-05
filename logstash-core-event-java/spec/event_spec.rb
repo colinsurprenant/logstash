@@ -1,6 +1,3 @@
-$LOAD_PATH << File.expand_path("../../lib", __FILE__)
-
-require "logstash-core-event-java/logstash-core-event-java"
 require "logstash/util"
 require "logstash/event"
 require "json"
