@@ -1,5 +1,6 @@
 # encoding: utf-8
 require "spec_helper"
+require "json"
 
 describe LogStash::Event do
 
@@ -365,7 +366,7 @@ describe LogStash::Event do
         )
         json = new_event.to_json
 
-        expect(json).to eq( "{\"@timestamp\":\"2014-09-23T19:26:15.832Z\",\"message\":\"foo bar\",\"@version\":\"1\"}")
+        expect(JSON.parse(json)).to eq( JSON.parse("{\"@timestamp\":\"2014-09-23T19:26:15.832Z\",\"message\":\"foo bar\",\"@version\":\"1\"}"))
       end
 
       it "should support to_json and ignore arguments" do
@@ -375,7 +376,7 @@ describe LogStash::Event do
         )
         json = new_event.to_json(:foo => 1, :bar => "baz")
 
-        expect(json).to eq( "{\"@timestamp\":\"2014-09-23T19:26:15.832Z\",\"message\":\"foo bar\",\"@version\":\"1\"}")
+        expect(JSON.parse(json)).to eq( JSON.parse("{\"@timestamp\":\"2014-09-23T19:26:15.832Z\",\"message\":\"foo bar\",\"@version\":\"1\"}"))
       end
     end
 
