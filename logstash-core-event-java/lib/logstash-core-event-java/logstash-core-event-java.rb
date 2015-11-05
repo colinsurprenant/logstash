@@ -27,3 +27,5 @@ end
 
 require "jruby_event_ext"
 require "jruby_timestamp_ext"
+require "logstash/event"
+require "logstash/timestamp"
