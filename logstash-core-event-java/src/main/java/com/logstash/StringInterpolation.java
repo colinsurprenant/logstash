@@ -63,7 +63,7 @@ public class StringInterpolation {
                 pos = matcher.end();
             }
 
-            if(pos < template.length() - 1) {
+            if(pos <= template.length() - 1) {
                 compiledTemplate.add(new StaticNode(template.substring(pos)));
             }
         }
