@@ -19,13 +19,16 @@ module LogStash::Util
         value.each do |v|
           v = event.sprintf(v)
           if event.include?(field)
-            event[field] = Array(event[field])
-            event[field] << v
+            # note below that the array field needs to be updated then reassigned to the event.
+            # this is important because a construct like event[field] << v will not work
+            # in the current Java event implementation. see https://github.com/elastic/logstash/issues/4140
+            a = Array(event[field])
+            a << v
+            event[field] = a
           else
             event[field] = v
           end
-          @logger.debug? and @logger.debug("#{pluginname}: adding value to field",
-                                         :field => field, :value => value)
+          @logger.debug? and @logger.debug("#{pluginname}: adding value to field", :field => field, :value => value)
         end
       end
     end
@@ -34,9 +37,13 @@ module LogStash::Util
     def add_tags(tags, event, pluginname)
       tags.each do |tag|
         tag = event.sprintf(tag)
-        @logger.debug? and @logger.debug("#{pluginname}: adding tag",
-                                       :tag => tag)
-        (event["tags"] ||= []) << tag
+        @logger.debug? and @logger.debug("#{pluginname}: adding tag", :tag => tag)
+        # note below that the tags array field needs to be updated then reassigned to the event.
+        # this is important because a construct like event["tags"] << tag will not work
+        # in the current Java event implementation. see https://github.com/elastic/logstash/issues/4140
+        tags = event["tags"] || []
+        tags << tag
+        event["tags"] = tags
       end
     end
 
