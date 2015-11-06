@@ -57,6 +57,7 @@ namespace "artifact" do
   # locate the "gem "logstash-core" ..." line in Gemfile, and if the :path => "..." option if specified
   # build and install the local logstash-core gem otherwise just do nothing, bundler will deal with it.
   task "install-logstash-core" do
+    # regex which matches a Gemfile gem definition for the logstash-core gem and captures the :path option
     RE = /^\s*gem\s+["']logstash-core["'](?:\s*,\s*["'][^"^']+["'])?(?:\s*,\s*:path\s*=>\s*["']([^"^']+)["'])?/i
 
     lines = File.readlines("Gemfile")
@@ -75,6 +76,7 @@ namespace "artifact" do
   # # locate the "gem "logstash-core-event*" ..." line in Gemfile, and if the :path => "." option if specified
   # # build and install the local logstash-core-event* gem otherwise just do nothing, bundler will deal with it.
   task "install-logstash-core-event" do
+    # regex which matches a Gemfile gem definition for the logstash-core-event* gem and captures the gem name and :path option
     RE = /^\s*gem\s+["'](logstash-core-event[^"^']*)["'](?:\s*,\s*["'][^"^']+["'])?(?:\s*,\s*:path\s*=>\s*["']([^"^']+)["'])?/i
 
     lines = File.readlines("Gemfile")
