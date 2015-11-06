@@ -12,7 +12,8 @@ namespace "compile" do
   task "grammar" => "logstash-core/lib/logstash/config/grammar.rb"
 
   desc "Build everything"
-  task "all" => ["grammar", "logstash-core-event-java"]
+  # task "all" => ["grammar", "logstash-core-event-java"]
+  task "all" => ["grammar"]
 
   task "logstash-core-event-java" do
     puts("Building logstash-core-event-java using gradle")
