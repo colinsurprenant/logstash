@@ -1,6 +1,9 @@
 # encoding: utf-8
 require "logstash/errors"
-require "logstash/version"
+
+lib_dir = ::File.join(ENV["LOGSTASH_HOME"], "lib")
+$LOAD_PATH << lib_dir unless $LOAD_PATH.include?(lib_dir)
+
 
 module LogStash
   module Environment
@@ -9,7 +12,6 @@ module LogStash
     # rehydrate the bootstrap environment if the startup was not done by executing bootstrap.rb
     # and we are in the context of the logstash package
     if !LogStash::Environment.const_defined?("LOGSTASH_HOME") &&  !ENV["LOGSTASH_HOME"].to_s.empty?
-      $LOAD_PATH << ::File.join(ENV["LOGSTASH_HOME"], "lib")
       require "bootstrap/environment"
     end
 
