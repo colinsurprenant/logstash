@@ -86,8 +86,6 @@ namespace "plugin" do
     name = args[:name]
     path = args[:path]
 
-    puts("toto #{name}, #{path}")
-
     Rake::Task["plugin:build-local-core-gem"].invoke(name, path)
 
     gems = Dir[File.join(path, "#{name}*.gem")]
