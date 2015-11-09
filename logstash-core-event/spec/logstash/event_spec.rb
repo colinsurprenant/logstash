@@ -339,7 +339,7 @@ describe LogStash::Event do
         expect(event[LogStash::Event::TIMESTAMP_FAILURE_FIELD]).to eq(666)
       end
 
-      xit "should warn for invalid value" do
+      it "should warn for invalid value" do
         expect(LogStash::Event::LOGGER).to receive(:warn).twice
 
         LogStash::Event.new("@timestamp" => :foo)
@@ -353,7 +353,7 @@ describe LogStash::Event do
         expect(event[LogStash::Event::TIMESTAMP_FAILURE_FIELD]).to eq("foo")
       end
 
-      xit "should warn for invalid string format" do
+      it "should warn for invalid string format" do
         expect(LogStash::Event::LOGGER).to receive(:warn)
         LogStash::Event.new("@timestamp" => "foo")
       end
