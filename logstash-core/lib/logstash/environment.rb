@@ -1,19 +1,9 @@
 # encoding: utf-8
 require "logstash/errors"
 
-lib_dir = ::File.join(ENV["LOGSTASH_HOME"], "lib")
-$LOAD_PATH << lib_dir unless $LOAD_PATH.include?(lib_dir)
-
-
 module LogStash
   module Environment
     extend self
-
-    # rehydrate the bootstrap environment if the startup was not done by executing bootstrap.rb
-    # and we are in the context of the logstash package
-    if !LogStash::Environment.const_defined?("LOGSTASH_HOME") &&  !ENV["LOGSTASH_HOME"].to_s.empty?
-      require "bootstrap/environment"
-    end
 
     LOGSTASH_CORE = ::File.expand_path(::File.join(::File.dirname(__FILE__), "..", ".."))
     LOGSTASH_ENV = (ENV["LS_ENV"] || 'production').to_s.freeze
@@ -81,14 +71,6 @@ module LogStash
 
     def windows?
       ::Gem.win_platform?
-    end
-
-    def vendor_path(path)
-      return ::File.join(LOGSTASH_HOME, "vendor", path)
-    end
-
-    def pattern_path(path)
-      return ::File.join(LOGSTASH_HOME, "patterns", path)
     end
 
     def locales_path(path)
