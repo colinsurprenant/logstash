@@ -58,13 +58,13 @@ namespace "artifact" do
   # build and install the local logstash-core gem otherwise just do nothing, bundler will deal with it.
   task "install-logstash-core" do
     # regex which matches a Gemfile gem definition for the logstash-core gem and captures the :path option
-    RE = /^\s*gem\s+["']logstash-core["'](?:\s*,\s*["'][^"^']+["'])?(?:\s*,\s*:path\s*=>\s*["']([^"^']+)["'])?/i
+    gem_line_regex = /^\s*gem\s+["']logstash-core["'](?:\s*,\s*["'][^"^']+["'])?(?:\s*,\s*:path\s*=>\s*["']([^"^']+)["'])?/i
 
     lines = File.readlines("Gemfile")
-    matches = lines.select{|line| line[RE]}
+    matches = lines.select{|line| line[gem_line_regex]}
     abort("ERROR: Gemfile format error, need a single logstash-core gem specification") if matches.size != 1
 
-    path = matches.first[RE, 1]
+    path = matches.first[gem_line_regex, 1]
 
     if path
       Rake::Task["plugin:install-local-core-gem"].invoke("logstash-core", path)
@@ -77,14 +77,14 @@ namespace "artifact" do
   # # build and install the local logstash-core-event* gem otherwise just do nothing, bundler will deal with it.
   task "install-logstash-core-event" do
     # regex which matches a Gemfile gem definition for the logstash-core-event* gem and captures the gem name and :path option
-    RE = /^\s*gem\s+["'](logstash-core-event[^"^']*)["'](?:\s*,\s*["'][^"^']+["'])?(?:\s*,\s*:path\s*=>\s*["']([^"^']+)["'])?/i
+    gem_line_regex = /^\s*gem\s+["'](logstash-core-event[^"^']*)["'](?:\s*,\s*["'][^"^']+["'])?(?:\s*,\s*:path\s*=>\s*["']([^"^']+)["'])?/i
 
     lines = File.readlines("Gemfile")
-    matches = lines.select{|line| line[RE]}
+    matches = lines.select{|line| line[gem_line_regex]}
     abort("ERROR: Gemfile format error, need a single logstash-core-event gem specification") if matches.size != 1
 
-    name = matches.first[RE, 1]
-    path = matches.first[RE, 2]
+    name = matches.first[gem_line_regex, 1]
+    path = matches.first[gem_line_regex, 2]
 
     if path
       Rake::Task["plugin:install-local-core-gem"].invoke(name, path)
