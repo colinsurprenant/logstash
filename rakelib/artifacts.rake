@@ -1,4 +1,4 @@
-require "logstash/version"
+require "logstash-core/lib/logstash/version"
 
 namespace "artifact" do
 
