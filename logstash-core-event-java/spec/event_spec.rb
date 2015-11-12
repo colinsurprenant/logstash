@@ -1,5 +1,6 @@
 # encoding: utf-8
 
+require "spec_helper"
 require "logstash/util"
 require "logstash/event"
 require "json"
@@ -119,7 +120,7 @@ describe LogStash::Event do
   end
 
   context "append" do
-    it "show append" do
+    it "should append" do
       event = LogStash::Event.new("message" => "hello world")
       event.append(LogStash::Event.new("message" => "another thing"))
       expect(event["message"]).to eq(["hello world", "another thing"])
@@ -129,9 +130,9 @@ describe LogStash::Event do
   context "tags" do
     it "should tag" do
       event = LogStash::Event.new("message" => "hello world")
-      tag = "foo"
-      event["tags"] = []
-      event["tags"] << tag unless event["tags"].include?(tag)
+      expect(event["tags"]).to be_nil
+      event["tags"] = ["foo"]
+      expect(event["tags"]).to eq(["foo"])
     end
   end
 end
