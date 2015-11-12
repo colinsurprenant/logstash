@@ -17,9 +17,6 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
   gem.version       = LOGSTASH_CORE_EVENT_JAVA_VERSION
 
-  # Gem dependencies
-  gem.add_runtime_dependency "logstash-core", ">= 2.0.0.beta2", "< 3.0.0"
-
   if RUBY_PLATFORM == 'java'
     gem.platform = RUBY_PLATFORM
   end
