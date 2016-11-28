@@ -1,7 +1,13 @@
 package org.logstash.ackedqueue;
 
+import org.jruby.RubyBoolean;
 import org.junit.Test;
 import org.logstash.common.io.ByteBufferPageIO;
+import org.logstash.common.io.CheckpointIO;
+import org.logstash.common.io.CheckpointIOFactory;
+import org.logstash.common.io.MemoryCheckpointIO;
+import org.logstash.common.io.PageIO;
+import org.logstash.common.io.PageIOFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -507,4 +513,55 @@ public class QueueTest {
         executor.shutdown();
     }
 
+    @Test
+    public void recoverFreshQueue() throws IOException {
+        MemoryCheckpointIO.clearSources();
+        CheckpointIO cpIO = new MemoryCheckpointIO("foobar");
+
+        // create pageIO facttory which just return an empty page and only expect page num 0
+        PageIOFactory pageIOFactory = (pageNum, size, path) -> {
+            assertThat(pageNum, is(equalTo(0)));
+            return new ByteBufferPageIO(size);
+        };
+
+        // inject checkpoints
+        Checkpoint cp = new Checkpoint(0, 0, 0, 0, 0);
+        cpIO.write(cpIO.headFileName(), cp);
+
+        TestQueue q = new TestQueue("foobbar", 1024, cpIO, pageIOFactory, StringElement.class, 0, 1, 1, 0) ;
+        q.open();
+
+        assertThat(q.getTailPages().size(), is(equalTo(0)));
+        assertThat(q.getHeadPage().getPageNum(), is(equalTo(0)));
+        assertThat(q.getHeadPage().getMinSeqNum(), is(equalTo(0L)));
+        assertThat(q.getHeadPage().getElementCount(), is(equalTo(0)));
+        assertThat(q.getHeadPage().maxSeqNum(), is(equalTo(-1L)));
+    }
+
+    @Test
+    public void recoverFullyAckedExistingQueue() throws IOException {
+        MemoryCheckpointIO.clearSources();
+        CheckpointIO cpIO = new MemoryCheckpointIO("foobar");
+
+        // create pageIO facttory which just return an empty page and only expect page num 0
+        PageIOFactory pageIOFactory = (pageNum, size, path) -> {
+            assertThat(pageNum, is(equalTo(69)));
+            return new ByteBufferPageIO(size);
+        };
+
+        // inject checkpoints
+        Checkpoint cp = new Checkpoint(69, 69, 666, 600, 66);
+        assertThat(cp.isFullyAcked(), is(true));
+
+        cpIO.write(cpIO.headFileName(), cp);
+
+        TestQueue q = new TestQueue("foobbar", 1024, cpIO, pageIOFactory, StringElement.class, 0, 1, 1, 0) ;
+        q.open();
+
+        assertThat(q.getTailPages().size(), is(equalTo(0)));
+        assertThat(q.getHeadPage().getPageNum(), is(equalTo(69)));
+        assertThat(q.getHeadPage().getMinSeqNum(), is(equalTo(600L)));
+        assertThat(q.getHeadPage().getElementCount(), is(equalTo(66)));
+        assertThat(q.getHeadPage().maxSeqNum(), is(equalTo(66L)));
+    }
 }
