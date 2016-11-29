@@ -10,8 +10,8 @@ public class TestQueue extends Queue {
         super(settings);
     }
 
-    public TestQueue(String dirPath, int pageCapacity, CheckpointIO checkpointIO, PageIOFactory pageIOFactory, Class elementClass, int maxUnread, int checkpointMaxWrites, int checkpointMaxAcks, int checkpointMaxInterval) {
-        super(dirPath, pageCapacity,checkpointIO, pageIOFactory, elementClass, maxUnread, checkpointMaxWrites, checkpointMaxAcks, checkpointMaxInterval);
+    public TestQueue(String dirPath, int pageCapacity, long maxBytes, CheckpointIO checkpointIO, PageIOFactory pageIOFactory, Class elementClass, int maxUnread, int checkpointMaxWrites, int checkpointMaxAcks, int checkpointMaxInterval) {
+        super(dirPath, pageCapacity, maxBytes, checkpointIO, pageIOFactory, elementClass, maxUnread, checkpointMaxWrites, checkpointMaxAcks, checkpointMaxInterval);
     }
 
     public HeadPage getHeadPage() {
