@@ -1,7 +1,6 @@
 package org.logstash.ackedqueue;
 
 import org.jruby.RubyBoolean;
-import org.junit.Test;
 import org.logstash.common.io.ByteBufferPageIO;
 import org.logstash.common.io.CheckpointIO;
 import org.logstash.common.io.CheckpointIOFactory;
@@ -21,11 +20,15 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
+import org.junit.Test;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.both;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.lessThan;
 
 public class QueueTest {
 
@@ -528,7 +531,7 @@ public class QueueTest {
         Checkpoint cp = new Checkpoint(0, 0, 0, 0, 0);
         cpIO.write(cpIO.headFileName(), cp);
 
-        TestQueue q = new TestQueue("foobbar", 1024, cpIO, pageIOFactory, StringElement.class, 0, 1, 1, 0) ;
+        TestQueue q = new TestQueue("foobbar", 1024, 0, cpIO, pageIOFactory, StringElement.class, 0, 1, 1, 0) ;
         q.open();
 
         assertThat(q.getTailPages().size(), is(equalTo(0)));
@@ -538,15 +541,28 @@ public class QueueTest {
         assertThat(q.getHeadPage().maxSeqNum(), is(equalTo(-1L)));
     }
 
+    public final static int M_BYTES = 1024 * 1024;
+
     @Test
     public void recoverFullyAckedExistingQueue() throws IOException {
         MemoryCheckpointIO.clearSources();
         CheckpointIO cpIO = new MemoryCheckpointIO("foobar");
 
+        // forge a pageIO
+        PageIO pageIO = new ByteBufferPageIO(M_BYTES);
+        pageIO.create();
+        for (long i = 0; i < 66; i++) {
+            pageIO.write("TEST".getBytes(), 600L + i);
+        }
+
         // create pageIO facttory which just return an empty page and only expect page num 0
         PageIOFactory pageIOFactory = (pageNum, size, path) -> {
-            assertThat(pageNum, is(equalTo(69)));
-            return new ByteBufferPageIO(size);
+            assertThat(pageNum, is(both(greaterThan(68)).and(lessThan(71))));
+            if (pageNum == 69) {
+                return pageIO;
+            } else {
+                return new ByteBufferPageIO(size);
+            }
         };
 
         // inject checkpoints
@@ -555,13 +571,24 @@ public class QueueTest {
 
         cpIO.write(cpIO.headFileName(), cp);
 
-        TestQueue q = new TestQueue("foobbar", 1024, cpIO, pageIOFactory, StringElement.class, 0, 1, 1, 0) ;
+        TestQueue q = new TestQueue("foobbar", M_BYTES, 0, cpIO, pageIOFactory, StringElement.class, 0, 1, 1, 0) ;
         q.open();
 
+        // the headpage was non-empty buyt fully-acked so it was beheaded but the tail page adding
+        // will discard it becaused it is fully acked so we should expect a new empty head page
+        // and no tail pages at this point.
+
         assertThat(q.getTailPages().size(), is(equalTo(0)));
-        assertThat(q.getHeadPage().getPageNum(), is(equalTo(69)));
-        assertThat(q.getHeadPage().getMinSeqNum(), is(equalTo(600L)));
-        assertThat(q.getHeadPage().getElementCount(), is(equalTo(66)));
-        assertThat(q.getHeadPage().maxSeqNum(), is(equalTo(66L)));
+        assertThat(q.getHeadPage().getPageNum(), is(equalTo(70)));
+        assertThat(q.getHeadPage().getMinSeqNum(), is(equalTo(0L)));
+        assertThat(q.getHeadPage().maxSeqNum(), is(equalTo(-1L)));
+
+        cp = cpIO.read(cpIO.headFileName());
+        assertThat(cp.getPageNum(), is(equalTo(70)));
+        assertThat(cp.getFirstUnackedPageNum(), is(equalTo(70)));
+        assertThat(cp.getElementCount(), is(equalTo(0)));
+        assertThat(cp.maxSeqNum(), is(equalTo(-1L)));
+        assertThat(cp.getFirstUnackedSeqNum(), is(equalTo(0L)));
+        assertThat(cp.getMinSeqNum(), is(equalTo(0L)));
     }
 }
